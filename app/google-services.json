@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "680968822857",
+    "project_id": "pushnotificationandroiddemoapp",
+    "storage_bucket": "pushnotificationandroiddemoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680968822857:android:2fb50fc6a0948f605cdf98",
+        "android_client_info": {
+          "package_name": "com.pushengage.PushNotificationDemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680968822857-kataoup9pur6m02ocboku2nstqgovqpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCoLxz4a7vY6lLvdK6dCHTWM-nZICYFfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680968822857-kataoup9pur6m02ocboku2nstqgovqpo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680968822857:android:9ac08b91d0134f815cdf98",
+        "android_client_info": {
+          "package_name": "com.pushengage.pushengage"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "680968822857-kataoup9pur6m02ocboku2nstqgovqpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCoLxz4a7vY6lLvdK6dCHTWM-nZICYFfw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "680968822857-kataoup9pur6m02ocboku2nstqgovqpo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,3 @@
+include ':PushEngage'
+include ':app'
+rootProject.name = "PushEngage"

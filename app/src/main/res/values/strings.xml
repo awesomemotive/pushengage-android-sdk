@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Push Engage Demo</string>
+    <string name="trigger">Trigger</string>
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="checkout">Checkout</string>
+    <string name="device_token">Device Token</string>
+    <string name="device_hash">Device Hash</string>
+    <string name="view_notification_latest_payload">View Latest Notification Payload</string>
+    <string name="payload">Payload</string>
+    <string name="get_subscriber_details">Get Subscriber Details</string>
+    <string name="update_hash_details">Update Hash Details</string>
+    <string name="get_attributes">Get Attributes</string>
+    <string name="add_attributes">Add Attributes</string>
+    <string name="set_attributes">Set Attributes</string>
+
+    <string name="delete_attributes">Delete Attributes</string>
+    <string name="add_profile_id">Add Profile ID</string>
+    <string name="add_segment">Add Segment</string>
+    <string name="delete_segment">Delete Segment</string>
+    <string name="add_dynamic_segments">Add Dynamic Segment</string>
+    <string name="delete_dynamic_fragments">Delete Dynamic Segment</string>
+
+    <string name="get_segment_hash_array">Get Segment Hash Array</string>
+    <string name="update_trigger_status">Update Trigger Status</string>
+    <string name="update_subscriber_status">Update Subscriber status</string>
+    <string name="check_subscriber_hash">Check Subscriber Hash</string>
+
+    <string name="attributes_added">Attributes Added Successfully</string>
+    <string name="attributes_set">Attributes Set Successfully</string>
+    <string name="dynamic_segment_added">Dynamic Segment Added Successfully</string>
+    <string name="profile_id_added">Profile Id Added Successfully</string>
+    <string name="segment_added">Segment Added Successfully</string>
+    <string name="delete_attributes_success">Deleted Attributes Successfully</string>
+    <string name="delete_segment_success">Deleted Segment Successfully</string>
+    <string name="trigger_status_updated">Trigger Status Updated Successfully</string>
+
+    <string name="enter_profile_id">Enter Profile Id</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="subscriber_details">Subscriber Details</string>
+    <string name="subscriber_details_request">Comma separated strings of details u want(Leave it as empty if u want to fetch all) \n Eg: device_type, city, country</string>
+    <string name="attributes">Attributes</string>
+    <string name="set_attributes_request">Enter attributes as key value pairs \n Eg: {"age" : "25", "height", "6.1"}</string>
+    <string name="delete_attributes_request">Comma separated strings of attributes u want to delete \n Eg: device_type, city, country</string>
+    <string name="add_segment_request">Comma separated strings of segments u want to add \n Eg: device_type, city, country</string>
+    <string name="delete_segment_request">Comma separated strings of segments u want to delete \n Eg: device_type, city, country</string>
+    <string name="add_dynamic_segment_request">Array of Objects with segment name and duration \n Eg: [
+          {
+            name: sleepers,
+            duration: 4
+          },
+        {
+            name: sports,
+            duration: 5
+          }
+        ]</string>
+    <string name="invalid_request_format">Invalid Request Format</string>
+
+</resources>
