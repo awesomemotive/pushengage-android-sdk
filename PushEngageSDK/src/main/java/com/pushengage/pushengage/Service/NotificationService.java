@@ -75,7 +75,7 @@ public class NotificationService extends Service {
                 i.putExtra("data", data);
                 getApplicationContext().startActivity(i);
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -123,7 +123,7 @@ public class NotificationService extends Service {
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
                         GenricResponse genricResponse = response.body();
-                        Log.d(TAG, "API Success");
+//                        Log.d(TAG, "API Success");
                         stopSelf();
                     } else {
                         if (!isRetry) {
@@ -142,7 +142,7 @@ public class NotificationService extends Service {
                             errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                             errorLogRequest.setData(data);
                             PEUtilities.addLogs(context, TAG, errorLogRequest);
-                            Log.e(TAG, "API Failure");
+//                            Log.d(TAG, "API Failure");
                             stopSelf();
                         }
                     }
@@ -165,7 +165,7 @@ public class NotificationService extends Service {
                         errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                         errorLogRequest.setData(data);
                         PEUtilities.addLogs(context, TAG, errorLogRequest);
-                        Log.e(TAG, "API Failure");
+//                        Log.d(TAG, "API Failure");
                         stopSelf();
                     }
                 }

@@ -29,7 +29,7 @@ public class PEUtilities {
         try {
             addresses = geocoder.getFromLocation(latitude, longitude, 1);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return addresses;
     }
@@ -82,15 +82,15 @@ public class PEUtilities {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.code() < 400) {
-                    Log.d(TAG, "Error Logged");
+//                    Log.d(TAG, "Error Logged");
                 } else {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }

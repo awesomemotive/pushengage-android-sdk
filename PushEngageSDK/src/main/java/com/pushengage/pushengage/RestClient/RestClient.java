@@ -114,49 +114,13 @@ public class RestClient {
         return unAuthorisedRetrofitClient.create(RTApiInterface.class);
     }
 
-    public static Retrofit getRetrofitClient(Map<String, String> headers, String url) {
-        String baseUrl = "";
-        PEPrefs prefs = new PEPrefs(globalContext);
-        if (url.equals(PEConstants.BASE_CDN)) {
-            if (!TextUtils.isEmpty(prefs.getBackendCdnUrl())) {
-                baseUrl = prefs.getBackendCdnUrl();
-            } else {
-                baseUrl = "https://staging-dexter1.pushengage.com/p/v1/";
-            }
-        } else if (url.equals(PEConstants.BASE)) {
-            if (!TextUtils.isEmpty(prefs.getBackendUrl())) {
-                baseUrl = prefs.getBackendUrl();
-            } else {
-                baseUrl = "https://staging-dexter.pushengage.com/p/v1/";
-            }
-        } else if (url.equals(PEConstants.TRIGGER)) {
-            if (!TextUtils.isEmpty(prefs.getTriggerUrl())) {
-                baseUrl = prefs.getTriggerUrl();
-            } else {
-                baseUrl = "https://m4xrk918t5.execute-api.us-east-1.amazonaws.com/beta/streams/production_triggers/records/";
-            }
-        } else if (url.equals(PEConstants.LOG)) {
-            if (!TextUtils.isEmpty(prefs.getLoggerUrl())) {
-                baseUrl = prefs.getLoggerUrl();
-            } else {
-                baseUrl = "https://notify.pushengage.com/v1/";
-            }
-        } else if (url.equals(PEConstants.ANALYTICS)) {
-            if (!TextUtils.isEmpty(prefs.getAnalyticsUrl())) {
-                baseUrl = prefs.getAnalyticsUrl();
-            } else {
-                baseUrl = "https://noti-analytics.pushengage.com/p/v1/";
-            }
-        }
+    public static Retrofit getRetrofitClient(Map<String, String> headers, String urlType) {
+        String baseUrl = getBaseUrl(urlType);
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-
         OkHttpClient.Builder okClientBuilder = new OkHttpClient().newBuilder();
-
-        if (BuildConfig.DEBUG) {
-            okClientBuilder.addInterceptor(interceptor);
-        }
+        okClientBuilder.addInterceptor(interceptor);
 
         okClientBuilder.addInterceptor(new Interceptor() {
             @Override
@@ -169,7 +133,7 @@ public class RestClient {
                     pInfo = globalContext.getPackageManager().getPackageInfo(globalContext.getPackageName(), 0);
                     sdkVersion = pInfo.versionName;
                 } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
                 requestBuilder.addHeader("content-type", "application/json");
                 requestBuilder.addHeader("swv", sdkVersion);
@@ -181,16 +145,15 @@ public class RestClient {
                 }
                 Request request = requestBuilder.build();
                 okhttp3.Response response = chain.proceed(request);
-                Log.e(TAG, "response Called");
-                if (!url.equals(PEConstants.ANALYTICS)) {
+                if (!urlType.equals(PEConstants.ANALYTICS)) {
                     try {
-                        if (response.code() == 404 && url.equalsIgnoreCase(PEConstants.BASE)) {
-                            Log.e(TAG, " 404 response Called");
+                        if (response.code() == 404 && urlType.equalsIgnoreCase(PEConstants.BASE)) {
+//                            Log.d(TAG, " 404 response Called");
 
                             try {
                                 request = callAddSubscriberAPI(request, prefs.getHash());
                             } catch (Exception e) {
-                                e.printStackTrace();
+//                                e.printStackTrace();
                             }
                             if (request != null) {
                                 response.close();
@@ -198,7 +161,7 @@ public class RestClient {
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
 
                 }
@@ -217,6 +180,84 @@ public class RestClient {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         return retrofitClient;
+    }
+
+    private static String getBaseUrl(String urlType) {
+        String baseUrl = "";
+        switch (urlType) {
+            case PEConstants.BASE_CDN:
+                if (!TextUtils.isEmpty(prefs.getBackendCdnUrl())) {
+                    baseUrl = prefs.getBackendCdnUrl();
+                } else {
+                    switch (prefs.getEnvironment()) {
+                        case PEConstants.PROD:
+                            baseUrl = PEConstants.PROD_BASE_CDN_URL;
+                            break;
+                        case PEConstants.STG:
+                            baseUrl = PEConstants.STG_BASE_CDN_URL;
+                            break;
+                    }
+                }
+                break;
+            case PEConstants.BASE:
+                if (!TextUtils.isEmpty(prefs.getBackendUrl())) {
+                    baseUrl = prefs.getBackendUrl();
+                } else {
+                    switch (prefs.getEnvironment()) {
+                        case PEConstants.PROD:
+                            baseUrl = PEConstants.PROD_BASE_URL;
+                            break;
+                        case PEConstants.STG:
+                            baseUrl = PEConstants.STG_BASE_URL;
+                            break;
+                    }
+                }
+                break;
+            case PEConstants.TRIGGER:
+                if (!TextUtils.isEmpty(prefs.getTriggerUrl())) {
+                    baseUrl = prefs.getTriggerUrl();
+                } else {
+                    switch (prefs.getEnvironment()) {
+                        case PEConstants.PROD:
+                            baseUrl = PEConstants.PROD_TRIGGER_URL;
+                            break;
+                        case PEConstants.STG:
+                            baseUrl = PEConstants.STG_TRIGGER_URL;
+                            break;
+                    }
+                }
+                break;
+            case PEConstants.LOG:
+                if (!TextUtils.isEmpty(prefs.getLoggerUrl())) {
+                    baseUrl = prefs.getLoggerUrl();
+                } else {
+                    switch (prefs.getEnvironment()) {
+                        case PEConstants.PROD:
+                            baseUrl = PEConstants.PROD_LOG_URL;
+                            break;
+                        case PEConstants.STG:
+                            baseUrl = PEConstants.STG_LOG_URL;
+                            break;
+                    }
+                }
+                break;
+            case PEConstants.ANALYTICS:
+                if (!TextUtils.isEmpty(prefs.getAnalyticsUrl())) {
+                    baseUrl = prefs.getAnalyticsUrl();
+                } else {
+                    switch (prefs.getEnvironment()) {
+                        case PEConstants.PROD:
+                            baseUrl = PEConstants.PROD_ANALYTICS_URL;
+                            break;
+                        case PEConstants.STG:
+                            baseUrl = PEConstants.STG_ANALYTICS_URL;
+                            break;
+                    }
+                }
+                break;
+        }
+
+        return baseUrl;
     }
 
     private static Request callAddSubscriberAPI(Request request, String oldHash) {
@@ -295,7 +336,7 @@ public class RestClient {
             }
             return RequestBody.create(requestBody.contentType(), obj.toString());
         } catch (JSONException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return null;
     }

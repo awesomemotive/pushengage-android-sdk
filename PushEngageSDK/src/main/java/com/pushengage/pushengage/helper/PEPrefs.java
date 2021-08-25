@@ -26,8 +26,9 @@ public class PEPrefs {
     private static final String KEY_DELETE_ON_NOTIFICATION_DISABLE = "delete_on_notification_disable";
     private static final String KEY_ARE_NOTIFICATIONS_DISABLED = "is_notifications_disabled";
     private static final String KEY_SUBSCRIBER_DELETED = "subscriberDeleted";
-    private static final String KEY_ACTION_BUTTON_RECEIVER_REGISTERED = "KEY_ACTION_BUTTON_RECEIVER_REGISTERED";
-    private static final String KEY_SMALL_ICON_RESOURCE = "KEY_SMALL_ICON_RESOURCE";
+    private static final String KEY_ACTION_BUTTON_RECEIVER_REGISTERED = "ACTION_BUTTON_RECEIVER_REGISTERED";
+    private static final String KEY_SMALL_ICON_RESOURCE = "SMALL_ICON_RESOURCE";
+    private static final String KEY_ENVIRONMENT = "ENVIRONMENT";
     private final SharedPreferences mPrefsRead;
     private final SharedPreferences.Editor mPrefsWrite;
 
@@ -215,6 +216,15 @@ public class PEPrefs {
 
     public void setSmallIconResource(String smallIconResource) {
         mPrefsWrite.putString(KEY_SMALL_ICON_RESOURCE, smallIconResource);
+        mPrefsWrite.commit();
+    }
+
+    public String getEnvironment() {
+        return mPrefsRead.getString(KEY_ENVIRONMENT, PEConstants.PROD);
+    }
+
+    public void setEnvironment(String environment) {
+        mPrefsWrite.putString(KEY_ENVIRONMENT, environment);
         mPrefsWrite.commit();
     }
 
