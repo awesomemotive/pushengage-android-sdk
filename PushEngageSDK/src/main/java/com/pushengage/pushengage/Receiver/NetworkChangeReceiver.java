@@ -43,17 +43,17 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
     public void onReceive(Context context, Intent intent) {
         try {
             if (isOnline(context)) {
-                Log.e("NetworkChangeReceiver", "Device online");
+                Log.d("NetworkChangeReceiver", "Device online");
                 PEPrefs prefs = new PEPrefs(context);
                 if (TextUtils.isEmpty(prefs.getHash())) {
                     PushEngage.subscribe();
                 }
                 getDataFromDB(context);
             } else {
-                Log.e("NetworkChangeReceiver", "Device Offline");
+                Log.d("NetworkChangeReceiver", "Device Offline");
             }
         } catch (NullPointerException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -82,7 +82,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
             //should check null because in airplane mode it will be null
             return (netInfo != null && netInfo.isConnected());
         } catch (NullPointerException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return false;
         }
     }
@@ -97,7 +97,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
                 if (response.isSuccessful()) {
                     GenricResponse genricResponse = response.body();
                     daoInterface.deleteClick(clickRequestEntity.getDeviceHash(), clickRequestEntity.getTag());
-                    Log.d(TAG, "API Success");
+//                    Log.d(TAG, "API Success");
                 } else {
                     ErrorLogRequest errorLogRequest = new ErrorLogRequest();
                     Gson gson = new Gson();
@@ -107,7 +107,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
                     errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                     errorLogRequest.setData(data);
                     PEUtilities.addLogs(context, TAG, errorLogRequest);
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
@@ -119,7 +119,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
                 errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                 errorLogRequest.setData(data);
                 PEUtilities.addLogs(context, TAG, errorLogRequest);
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }

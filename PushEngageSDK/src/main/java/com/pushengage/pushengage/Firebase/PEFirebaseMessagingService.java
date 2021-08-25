@@ -196,7 +196,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                     notificationBuilder.addAction(iconResourceId, ab.getL(), actionButtonsPendingIntent);
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
@@ -219,7 +219,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
             } catch (Exception e) {
                 notificationBuilder.setSmallIcon(R.drawable.ic_stat_notification_default);
                 notificationBuilder.setSmallIcon(R.drawable.ic_stat_notification_default);
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         } else {
             try {
@@ -231,7 +231,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
             } catch (Exception e) {
                 notificationBuilder.setSmallIcon(R.drawable.ic_stat_notification_default);
                 notificationBuilder.setSmallIcon(R.drawable.ic_stat_notification_default);
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
@@ -265,14 +265,14 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
 //      Method to Create channel
         try {
             setChannelInfo(ci, notificationManager, notificationBuilder, payload, false);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
     }
@@ -308,7 +308,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                         });
 
             } catch (Exception e) {
-                Log.e(TAG, "Payload Image Exception");
+//                Log.d(TAG, "Payload Image Exception");
             }
         }
 //      Setting notification Large Icon.
@@ -330,7 +330,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                         });
 
             } catch (Exception e) {
-                Log.e(TAG, "Payload Large Image Exception");
+//                Log.d(TAG, "Payload Large Image Exception");
             }
         }
 
@@ -354,7 +354,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                             }
                         });
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
@@ -476,7 +476,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                         notificationBuilder.setSound(soundUri);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
 
 //              Setting notification vibration for Devices older than Android O.
@@ -496,7 +496,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                         notificationBuilder.setVibrate(array);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
             }
 //          Publish Notification
@@ -529,7 +529,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                     }
                     sendNotification(payloadPOJO, true);
                 } else if (response.code() != 404) {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                     if (!isRetry) {
                         new Timer().schedule(new TimerTask() {
                             @Override
@@ -551,7 +551,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
 
             @Override
             public void onFailure(@NonNull Call<FetchResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
                 if (!isRetry) {
                     new Timer().schedule(new TimerTask() {
                         @Override
@@ -626,7 +626,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                 channel.setVibrationPattern(array);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return channel;
     }
@@ -651,7 +651,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                 channel.setLightColor(Color.parseColor("#" + colorCode));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return channel;
     }
@@ -678,7 +678,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
             public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                 if (response.isSuccessful()) {
                     GenricResponse genricResponse = response.body();
-                    Log.e(TAG, "API Success");
+//                    Log.d(TAG, "API Success");
                 } else {
                     if (!isRetry) {
                         new Timer().schedule(new TimerTask() {
@@ -696,7 +696,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                         errorLogRequest.setName(PEConstants.VIEW_COUNT_TRACKING_FAILED);
                         errorLogRequest.setData(data);
                         PEUtilities.addLogs(getApplicationContext(), TAG, errorLogRequest);
-                        Log.e(TAG, "API Failure");
+//                        Log.d(TAG, "API Failure");
                     }
                 }
             }
@@ -718,7 +718,7 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                     errorLogRequest.setName(PEConstants.VIEW_COUNT_TRACKING_FAILED);
                     errorLogRequest.setData(data);
                     PEUtilities.addLogs(getApplicationContext(), TAG, errorLogRequest);
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
         });
@@ -752,17 +752,17 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                             channelResponse.getData().getOptions().getBadges(), channelResponse.getData().getOptions().getLockScreen());
                     daoInterface.insert(channelEntity);
                     setChannelInfo(channelId, notificationManager, notificationBuilder, payload, false);
-                    Log.d(TAG, "API Success");
+//                    Log.d(TAG, "API Success");
                 } else {
                     setChannelInfo(channelId, notificationManager, notificationBuilder, payload, true);
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ChannelResponse> call, @NonNull Throwable t) {
                 setChannelInfo(channelId, notificationManager, notificationBuilder, payload, true);
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }
@@ -782,15 +782,15 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.code() < 400) {
-                    Log.d(TAG, "Error Logged");
+//                    Log.d(TAG, "Error Logged");
                 } else {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }
@@ -810,13 +810,13 @@ public class PEFirebaseMessagingService extends FirebaseMessagingService {
                     GenricResponse genricResponse = response.body();
                     prefs.setIsNotificationDisabled(updateSubscriberStatusRequest.getIsUnSubscribed());
                 } else {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }

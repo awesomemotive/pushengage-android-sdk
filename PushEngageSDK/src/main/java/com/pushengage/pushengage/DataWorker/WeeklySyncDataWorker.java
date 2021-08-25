@@ -38,15 +38,15 @@ public class WeeklySyncDataWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        Log.i(TAG, "Syncing Data with Server");
+//        Log.i(TAG, "Syncing Data with Server");
         try {
             callAndroidSync();
         } catch (Throwable e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Technically WorkManager will return Result.failure()
             // but it's best to be explicit about it.
             // Thus if there were errors, we're return FAILURE
-            Log.e(TAG, "Error fetching data", e);
+//            Log.d(TAG, "Error fetching data", e);
             return Result.failure();
         }
         return Result.success();
@@ -56,7 +56,7 @@ public class WeeklySyncDataWorker extends Worker {
     @Override
     public void onStopped() {
         super.onStopped();
-        Log.i(TAG, "OnStopped called for this worker");
+//        Log.i(TAG, "OnStopped called for this worker");
     }
 
     /**
@@ -65,7 +65,7 @@ public class WeeklySyncDataWorker extends Worker {
     public void callAndroidSync() {
         if (PEUtilities.checkNetworkConnection(getApplicationContext())) {
             prefs = new PEPrefs(getApplicationContext());
-            Log.e(TAG, " SiteKey = " + prefs.getSiteKey());
+//            Log.d(TAG, " SiteKey = " + prefs.getSiteKey());
             Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(getApplicationContext()).androidSync(prefs.getSiteKey());
             addRecordsResponseCall.enqueue(new Callback<AndroidSyncResponse>() {
                 @Override
@@ -92,16 +92,16 @@ public class WeeklySyncDataWorker extends Worker {
                             callUpdateSubscriberHash();
                         } else {
                             prefs.setIsSubscriberDeleted(true);
-                            Log.e(TAG, "Site Status = " + androidSyncResponse.getData().getSiteStatus());
+//                            Log.d(TAG, "Site Status = " + androidSyncResponse.getData().getSiteStatus());
                         }
                     } else {
-                        Log.e(TAG, "API Failure");
+//                        Log.d(TAG, "API Failure");
                     }
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<AndroidSyncResponse> call, @NonNull Throwable t) {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             });
         }
@@ -137,13 +137,13 @@ public class WeeklySyncDataWorker extends Worker {
                 if (response.isSuccessful()) {
                     GenricResponse genricResponse = response.body();
                 } else {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }

@@ -29,7 +29,7 @@ public class DailySyncDataWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        Log.i(TAG, "Syncing Data with Server");
+//        Log.i(TAG, "Syncing Data with Server");
         prefs = new PEPrefs(getApplicationContext());
         try {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
@@ -45,11 +45,11 @@ public class DailySyncDataWorker extends Worker {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             // Technically WorkManager will return Result.failure()
             // but it's best to be explicit about it.
             // Thus if there were errors, we're return FAILURE
-            Log.e(TAG, "Error fetching data", e);
+//            Log.d(TAG, "Error fetching data", e);
             return Result.failure();
         }
         return Result.success();
@@ -59,7 +59,7 @@ public class DailySyncDataWorker extends Worker {
     @Override
     public void onStopped() {
         super.onStopped();
-        Log.i(TAG, "OnStopped called for this worker");
+//        Log.i(TAG, "OnStopped called for this worker");
     }
 
     /**
@@ -77,13 +77,13 @@ public class DailySyncDataWorker extends Worker {
                     GenricResponse genricResponse = response.body();
                     prefs.setIsNotificationDisabled(updateSubscriberStatusRequest.getIsUnSubscribed());
                 } else {
-                    Log.e(TAG, "API Failure");
+//                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
-                Log.e(TAG, "API Failure");
+//                Log.d(TAG, "API Failure");
             }
         });
     }

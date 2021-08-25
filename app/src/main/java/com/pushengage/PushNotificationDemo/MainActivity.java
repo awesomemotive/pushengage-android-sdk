@@ -213,9 +213,9 @@ public class MainActivity extends AppCompatActivity {
         etRequest.setLayoutParams(params);
         switch (request) {
             case Constants.SUBSCRIBER_DETAILS:
-                etRequest.setText(PushEngage.City + "," + PushEngage.Country + "," + PushEngage.State + "," +
-                        PushEngage.Device + "," + PushEngage.DeviceType + "," + PushEngage.ProfileId + "," + PushEngage.Segments
-                        + "," + PushEngage.Timezone + "," + PushEngage.TsCreated);
+                etRequest.setText(PushEngage.SubscriberFields.City + "," + PushEngage.SubscriberFields.Country + "," + PushEngage.SubscriberFields.State + "," +
+                        PushEngage.SubscriberFields.Device + "," + PushEngage.SubscriberFields.DeviceType + "," + PushEngage.SubscriberFields.ProfileId + "," + PushEngage.SubscriberFields.Segments
+                        + "," + PushEngage.SubscriberFields.Timezone + "," + PushEngage.SubscriberFields.TsCreated);
                 break;
             case Constants.ADD_DYNAMIC_SEGMENT:
                 etRequest.setText("[\n{\nname: sports,\nduration: 5\n}\n]");
