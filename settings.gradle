@@ -1,3 +1,4 @@
+// Comment out the line below while using production SDK Library.
 include ':PushEngageSDK'
 include ':app'
 rootProject.name = "PushEngage"

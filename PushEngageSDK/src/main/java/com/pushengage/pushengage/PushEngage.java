@@ -139,7 +139,7 @@ public class PushEngage {
      * @return Current SDK version
      */
     public static String getSdkVersion() {
-        return "1.0";
+        return PEConstants.SDK_VERSION;
     }
 
     /**
@@ -430,9 +430,11 @@ public class PushEngage {
                 public void onResponse(@NonNull Call<RecordsResponse> call, @NonNull Response<RecordsResponse> response) {
                     if (response.isSuccessful()) {
                         RecordsResponse addRecordsResponse = response.body();
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
-                        callback.onFailure(response.code(), response.message());
+                        if (callback != null)
+                            callback.onFailure(response.code(), response.message());
 //                        Log.d(TAG, "API Failure");
                     }
                 }
@@ -440,11 +442,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<RecordsResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
 
 
@@ -524,18 +528,22 @@ public class PushEngage {
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
                         GenricResponse genricResponse = response.body();
-                        callback.onSuccess(genricResponse.getData());
+                        if (callback != null)
+                            callback.onSuccess(genricResponse.getData());
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -543,11 +551,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
@@ -565,18 +575,22 @@ public class PushEngage {
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
                         GenricResponse genricResponse = response.body();
-                        callback.onSuccess(genricResponse.getData());
+                        if (callback != null)
+                            callback.onSuccess(genricResponse.getData());
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -584,16 +598,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, validationResult);
+                    if (callback != null)
+                        callback.onFailure(400, validationResult);
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to delete Subscriber Attributes
+     *
+     * @param values
+     */
+    public static void deleteSubscriberAttributes(List<String> values) {
+        deleteSubscriberAttributes(values, null);
+    }
+
+    /**
+     * API call to delete Subscriber Attributes with Callback
      *
      * @param values
      * @param callback
@@ -606,18 +631,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -625,16 +654,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to add Subscriber Attributes
+     *
+     * @param obj
+     */
+    public static void addSubscriberAttributes(JSONObject obj) {
+        addSubscriberAttributes(obj, null);
+    }
+
+    /**
+     * API call to add Subscriber Attributes with Callback
      *
      * @param obj
      * @param callback
@@ -649,18 +689,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -668,16 +712,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
-     * API call to Set Subscriber Attributes
+     * API call to set Subscriber Attributes
+     *
+     * @param obj
+     */
+    public static void setSubscriberAttributes(JSONObject obj) {
+        setSubscriberAttributes(obj, null);
+    }
+
+    /**
+     * API call to Set Subscriber Attributes with callback
      *
      * @param obj
      * @param callback
@@ -692,18 +747,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -711,16 +770,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to add ProfileId
+     *
+     * @param profileId
+     */
+    public static void addProfileId(String profileId) {
+        addProfileId(profileId, null);
+    }
+
+    /**
+     * API call to add ProfileId with callback
      *
      * @param profileId
      * @param callback
@@ -735,18 +805,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -754,16 +828,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to add Segments
+     *
+     * @param segmentId
+     */
+    public static void addSegment(List<String> segmentId) {
+        addSegment(segmentId, null);
+    }
+
+    /**
+     * API call to add Segments with Callback
      *
      * @param segmentId
      * @param callback
@@ -777,18 +862,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
 
                     }
@@ -797,16 +886,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to remove Segments
+     *
+     * @param segmentId
+     */
+    public static void removeSegment(List<String> segmentId) {
+        removeSegment(segmentId, null);
+    }
+
+    /**
+     * API call to remove Segments with Callback
      *
      * @param segmentId
      * @param callback
@@ -821,18 +921,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -840,16 +944,27 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
     /**
      * API call to add Dynamic Segments
+     *
+     * @param segments
+     */
+    public static void addDynamicSegment(List<AddDynamicSegmentRequest.Segment> segments) {
+        addDynamicSegment(segments, null);
+    }
+
+    /**
+     * API call to add Dynamic Segments with callback
      *
      * @param segments
      * @param callback
@@ -863,18 +978,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -882,11 +1001,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
@@ -905,18 +1026,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -924,11 +1049,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
@@ -945,18 +1072,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -964,11 +1095,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
@@ -989,18 +1122,22 @@ public class PushEngage {
                 @Override
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
-                        callback.onSuccess(null);
+                        if (callback != null)
+                            callback.onSuccess(null);
                     } else {
 //                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
                                 JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
+                                if (callback != null)
+                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
+                                if (callback != null)
+                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
                             }
                         } else {
-                            callback.onFailure(response.code(), context.getString(R.string.server_error));
+                            if (callback != null)
+                                callback.onFailure(response.code(), context.getString(R.string.server_error));
                         }
                     }
                 }
@@ -1008,11 +1145,13 @@ public class PushEngage {
                 @Override
                 public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
 //                    Log.d(TAG, "API Failure");
-                    callback.onFailure(400, t.getMessage());
+                    if (callback != null)
+                        callback.onFailure(400, t.getMessage());
                 }
             });
         } else {
-            callback.onFailure(400, validationResult);
+            if (callback != null)
+                callback.onFailure(400, validationResult);
         }
     }
 
