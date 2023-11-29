@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
             requestNotificationPermissionIfNeeded();
         }
 
-
         btnTrigger = findViewById(R.id.btn_trigger);
         tvDeviceToken = findViewById(R.id.tv_device_token);
         tvDeviceHash = findViewById(R.id.tv_device_hash);
