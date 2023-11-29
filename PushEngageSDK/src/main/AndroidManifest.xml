@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.pushengage.pushengage">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -12,9 +12,16 @@
 
     <application
         android:requestLegacyExternalStorage="true"
-        >
+        android:allowBackup="false">
+        <activity
+            android:name=".notificationhandling.PENotificationHandlerActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:exported="false" />
 
-        <service android:name=".Firebase.PEFirebaseMessagingService">
+        <service
+            android:name=".core.PEFirebaseMessagingService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>

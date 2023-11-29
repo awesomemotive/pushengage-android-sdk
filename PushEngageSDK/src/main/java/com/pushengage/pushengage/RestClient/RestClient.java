@@ -14,6 +14,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.pushengage.pushengage.BuildConfig;
 import com.pushengage.pushengage.PushEngage;
+import com.pushengage.pushengage.R;
 import com.pushengage.pushengage.helper.PEConstants;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
@@ -34,6 +35,7 @@ import com.pushengage.pushengage.model.request.UpgradeSubscriberRequest;
 import com.pushengage.pushengage.model.response.AddSubscriberResponse;
 import com.pushengage.pushengage.model.response.AndroidSyncResponse;
 import com.pushengage.pushengage.model.response.ChannelResponse;
+import com.pushengage.pushengage.model.response.ChannelResponseModel;
 import com.pushengage.pushengage.model.response.FetchResponse;
 import com.pushengage.pushengage.model.response.GenricResponse;
 import com.pushengage.pushengage.model.response.RecordsResponse;
@@ -264,8 +266,7 @@ public class RestClient {
         String timeZone = PEUtilities.getTimeZone();
         String language = Locale.getDefault().getLanguage();
         String device = "";
-        TelephonyManager manager = (TelephonyManager) globalContext.getSystemService(Context.TELEPHONY_SERVICE);
-        if (Objects.requireNonNull(manager).getPhoneType() == TelephonyManager.PHONE_TYPE_NONE) {
+        if (globalContext.getResources().getBoolean(R.bool.is_tablet)) {
             device = PEConstants.TABLET;
         } else {
             device = PEConstants.MOBILE;
@@ -290,19 +291,24 @@ public class RestClient {
             Call<AddSubscriberResponse> addSubscriberResponseCall = RestClient.getBackendClient(globalContext).addSubscriber(addSubscriberRequest, PushEngage.getSdkVersion(), String.valueOf(prefs.getEu()), String.valueOf(prefs.isGeoFetch()));
             retrofit2.Response<AddSubscriberResponse> response = addSubscriberResponseCall.execute();
             AddSubscriberResponse apiResponse = response.body();
-            prefs.setHash(apiResponse.getData().getSubscriberHash());
+            if(apiResponse != null) {
+                prefs.setHash(apiResponse.getData().getSubscriberHash());
+            }
 
-            System.out.println(apiResponse);
             RequestBody requestBody = request.body();
             HttpUrl.Builder urlBuilder = request.url().newBuilder();
             List<String> segments = request.url().pathSegments();
 
             for (int i = 0; i < segments.size(); i++) {
                 if (oldHash.equalsIgnoreCase(segments.get(i))) {
-                    urlBuilder.setPathSegment(i, apiResponse.getData().getSubscriberHash());
+                    if (apiResponse != null) {
+                        urlBuilder.setPathSegment(i, apiResponse.getData().getSubscriberHash());
+                    }
                 }
             }
-            requestBody = processApplicationJsonRequestBody(requestBody, apiResponse.getData().getSubscriberHash());
+            if (apiResponse != null) {
+                requestBody = processApplicationJsonRequestBody(requestBody, apiResponse.getData().getSubscriberHash());
+            }
 
             if (requestBody != null) {
                 Request.Builder requestBuilder = request.newBuilder();
@@ -423,7 +429,7 @@ public class RestClient {
         Call<AndroidSyncResponse> androidSync(@Path("site_key") String site_key);
 
         @GET("sites/{site_key}/android/notification-channels/{channel_id}")
-        Call<ChannelResponse> getChannelInfo(@Path("site_key") String site_key, @Path("channel_id") String channel_id);
+        Call<ChannelResponseModel> getChannelInfo(@Path("site_key") String site_key, @Path("channel_id") String channel_id);
 
         @PUT("subscriber/upgrade")
         Call<ResponseBody> upgradeSubscriber(@Body UpgradeSubscriberRequest upgradeSubscriberRequest);

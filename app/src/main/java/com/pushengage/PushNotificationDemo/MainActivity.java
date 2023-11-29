@@ -1,15 +1,21 @@
 package com.pushengage.PushNotificationDemo;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -46,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //For Android 13 and above, check for notification permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestNotificationPermissionIfNeeded();
+        }
+
         btnTrigger = findViewById(R.id.btn_trigger);
         tvDeviceToken = findViewById(R.id.tv_device_token);
         tvDeviceHash = findViewById(R.id.tv_device_hash);
@@ -63,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         btnUpdateSubscriberStatus = findViewById(R.id.btn_update_subscriber_status);
         progressBar = findViewById(R.id.progress_bar);
 
-        PushEngage.setSmallIconResource("pe_icon");
+//        PushEngage.setSmallIconResource("pe_icon");
 
         if (TextUtils.isEmpty(PushEngage.getDeviceTokenHash())) {
             final Handler handler = new Handler(Looper.getMainLooper());
@@ -72,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     tvDeviceHash.setText(PushEngage.getDeviceTokenHash());
                 }
-            }, 4000);
+            }, 15000);
         } else {
             tvDeviceHash.setText(PushEngage.getDeviceTokenHash());
         }
@@ -174,6 +186,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+    private void requestNotificationPermissionIfNeeded() {
+        int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
+//         If the permission is not granted, request it.
+        if (permissionState == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 100);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            // Check if the user granted the permission.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                PushEngage.subscribe();
+            } else {
+                Log.d("MainActivity", "onRequestPermissionsResult: Permission denied");
+            }
+        }
+    }
+    
     public void showResponse(String title, String response) {
         hideProgressDialog();
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
@@ -240,19 +274,22 @@ public class MainActivity extends AppCompatActivity {
                     case Constants.SUBSCRIBER_DETAILS:
                         try {
                             List<String> subscriberDetailsList = new ArrayList<String>(Arrays.asList(value.split(",")));
-                            PushEngage.getSubscriberDetails(subscriberDetailsList, new PushEngageResponseCallback() {
+                            showProgressDialog();
+                            PushEngage.getSubscriberDetails(new ArrayList<String>(), new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
                                     String response = gson.toJson(responseObject);
                                     showResponse(getString(R.string.subscriber_details), response);
+                                    hideProgressDialog();
                                 }
 
                                 @Override
                                 public void onFailure(Integer errorCode, String errorMessage) {
                                     Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                    hideProgressDialog();
                                 }
                             });
-                            showProgressDialog();
+
                         } catch (Exception e) {
                             Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
@@ -396,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case Constants.ADD_PROFILE_ID:
                         if (!TextUtils.isEmpty(value)) {
-                            PushEngage.addProfileId(value, new PushEngageResponseCallback() {
+                            PushEngage.addProfileId(value.replaceAll("\\n", ""), new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
                                     Toast.makeText(MainActivity.this, getString(R.string.profile_id_added), Toast.LENGTH_SHORT).show();

@@ -1,7 +1,6 @@
 package com.pushengage.pushengage.DataWorker;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;

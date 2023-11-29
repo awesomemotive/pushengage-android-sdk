@@ -11,12 +11,12 @@ public class PEApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-//        PEPrefs prefs = new PEPrefs(this);
-//        prefs.setEnvironment(PEConstants.STG);
+        PEPrefs prefs = new PEPrefs(this);
+        prefs.setEnvironment(PEConstants.STG);
 
         PushEngage pushEngage = new PushEngage.Builder()
                 .addContext(getApplicationContext())
-                .setAppId("8cde262c-16c3-4e14-9a73-43eaec292d3c")
+                .setAppId("3ca8257d-1f40-41e0-88bc-ea28dc6495ef")
                 .build();
     }
 }

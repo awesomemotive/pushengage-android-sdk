@@ -1,7 +1,7 @@
 package com.pushengage.pushengage.helper;
 
 public class PEConstants {
-    public static final String SDK_VERSION = "0.0.3";
+    public static final String SDK_VERSION = "0.0.4";
 
     public static final String PROD = "PRODUCTION";
     public static final String STG = "STAGING";
@@ -36,7 +36,7 @@ public class PEConstants {
     public static final String DEFAULT_CHANNEL_ID = "Default Channel";
     public static final String DEFAULT_CHANNEL_NAME = "Default Channel";
 
-    public static final String STG_BASE_CDN_URL = "https://staging-dexter1.pushengage.com/p/v1/";
+    public static final String STG_BASE_CDN_URL = "https://staging-dexter.pushengage.com/p/v1/";
     public static final String STG_BASE_URL = "https://staging-dexter.pushengage.com/p/v1/";
     public static final String STG_ANALYTICS_URL = "https://staging-dexter.pushengage.com/p/v1/";
     public static final String STG_TRIGGER_URL = "https://x9dlvh1zcg.execute-api.us-east-1.amazonaws.com/beta/streams/staging-trigger/records/";
@@ -48,6 +48,12 @@ public class PEConstants {
     public static final String PROD_TRIGGER_URL = "https://m4xrk918t5.execute-api.us-east-1.amazonaws.com/beta/streams/production_triggers/records/";
     public static final String PROD_LOG_URL = "https://notify.pushengage.com/v1/";
 
+    //Intent extras
+    public static final String URL_EXTRA = "url";
+    public static final String TAG_EXTRA = "tag";
+    public static final String DATA_EXTRA = "data";
+    public static final String ID_EXTRA = "id";
+    public static final String ACTION_EXTRA = "action";
 
 
 }

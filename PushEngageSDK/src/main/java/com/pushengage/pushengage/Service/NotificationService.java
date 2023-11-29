@@ -4,10 +4,8 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.IBinder;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -51,33 +49,11 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "NotificationService Called");
-
-        String tag = intent.getStringExtra("tag");
+        String tag = intent.getStringExtra(PEConstants.TAG_EXTRA);
         prefs = new PEPrefs(this);
-        String url = intent.getStringExtra("url");
-        String deepLink = intent.getStringExtra("deepLink");
-        HashMap<String, String> data = (HashMap<String, String>) intent.getSerializableExtra("data");
-        String action = intent.getStringExtra("action");
-        int id = intent.getIntExtra("id", -1);
+        String action = intent.getStringExtra(PEConstants.ACTION_EXTRA);
+        int id = intent.getIntExtra(PEConstants.ID_EXTRA, -1);
 
-         if (!TextUtils.isEmpty(url)) {
-            //deepLink or url available is used for navigation
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            i.setData(Uri.parse(url));
-            startActivity(i);
-        } else {
-             //deepLink or url not available, app is launched with additional data. User can handle navigation in their launch screen.
-             try {
-                String packageName = getPackageName();
-                Intent i = getApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName);
-                i.putExtra("data", data);
-                getApplicationContext().startActivity(i);
-            } catch (Exception e) {
-//                e.printStackTrace();
-            }
-        }
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(id);
 
@@ -123,7 +99,6 @@ public class NotificationService extends Service {
                 public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
                     if (response.isSuccessful()) {
                         GenricResponse genricResponse = response.body();
-//                        Log.d(TAG, "API Success");
                         stopSelf();
                     } else {
                         if (!isRetry) {
@@ -142,7 +117,6 @@ public class NotificationService extends Service {
                             errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                             errorLogRequest.setData(data);
                             PEUtilities.addLogs(context, TAG, errorLogRequest);
-//                            Log.d(TAG, "API Failure");
                             stopSelf();
                         }
                     }
@@ -165,7 +139,6 @@ public class NotificationService extends Service {
                         errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                         errorLogRequest.setData(data);
                         PEUtilities.addLogs(context, TAG, errorLogRequest);
-//                        Log.d(TAG, "API Failure");
                         stopSelf();
                     }
                 }
