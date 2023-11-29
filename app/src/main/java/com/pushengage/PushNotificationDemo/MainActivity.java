@@ -207,8 +207,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
+    
     public void showResponse(String title, String response) {
         hideProgressDialog();
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
