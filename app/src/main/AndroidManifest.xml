@@ -4,7 +4,7 @@
 
     <application
         android:name=".PEApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@drawable/pe_icon"
         android:label="@string/app_name"
         android:roundIcon="@drawable/pe_icon"
@@ -12,6 +12,7 @@
         android:theme="@style/Theme.PushEngage">
         <activity
             android:name=".TriggerActivity"
+            android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -29,6 +30,7 @@
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="portrait"
+            android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +39,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:exported="true"
             android:name=".MainActivity"
             android:screenOrientation="portrait" />
     </application>

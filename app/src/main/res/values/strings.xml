@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Push Engage Demo</string>
+    <string name="app_name">PushEngage</string>
     <string name="trigger">Trigger</string>
     <string name="add_to_cart">Add to Cart</string>
     <string name="checkout">Checkout</string>
@@ -15,9 +15,9 @@
 
     <string name="delete_attributes">Delete Attributes</string>
     <string name="add_profile_id">Add Profile ID</string>
-    <string name="add_segment">Add Segment</string>
-    <string name="delete_segment">Delete Segment</string>
-    <string name="add_dynamic_segments">Add Dynamic Segment</string>
+    <string name="add_segment">Add To Segment</string>
+    <string name="delete_segment">Delete From Segment</string>
+    <string name="add_dynamic_segments">Add To Dynamic Segment</string>
     <string name="delete_dynamic_fragments">Delete Dynamic Segment</string>
 
     <string name="get_segment_hash_array">Get Segment Hash Array</string>
@@ -41,7 +41,8 @@
     <string name="subscriber_details">Subscriber Details</string>
     <string name="subscriber_details_request">Comma separated strings of details u want(Leave it as empty if u want to fetch all) \n Eg: device_type, city, country</string>
     <string name="attributes">Attributes</string>
-    <string name="set_attributes_request">Enter attributes as key value pairs \n Eg: {"age" : "25", "height", "6.1"}</string>
+    <string name="set_attributes_request">Enter attributes as key value pairs \n Eg: {\"age\" : \"25\", \"height\": \"6.1\",
+        \"name\": \"Sam Paul\"}</string>
     <string name="delete_attributes_request">Comma separated strings of attributes u want to delete \n Eg: device_type, city, country</string>
     <string name="add_segment_request">Comma separated strings of segments u want to add \n Eg: device_type, city, country</string>
     <string name="delete_segment_request">Comma separated strings of segments u want to delete \n Eg: device_type, city, country</string>

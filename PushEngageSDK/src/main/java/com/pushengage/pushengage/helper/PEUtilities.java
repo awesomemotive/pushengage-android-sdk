@@ -5,8 +5,12 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import androidx.annotation.NonNull;
+
+import com.pushengage.pushengage.PushEngage;
+import com.pushengage.pushengage.R;
 import com.pushengage.pushengage.RestClient.RestClient;
 import com.pushengage.pushengage.model.request.ErrorLogRequest;
 import java.text.DateFormat;
@@ -15,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Random;
 import java.util.TimeZone;
 import okhttp3.ResponseBody;
@@ -77,20 +82,27 @@ public class PEUtilities {
      * @param log
      */
     public static void addLogs(Context context, String TAG, ErrorLogRequest log) {
+        String device = "";
+        if (context.getResources().getBoolean(R.bool.is_tablet)) {
+            device = PEConstants.TABLET;
+        } else {
+            device = PEConstants.MOBILE;
+        }
+        log.getData().setDevice(device);
         Call<ResponseBody> addRecordsResponseCall = RestClient.getLogClient(context).logs(log);
         addRecordsResponseCall.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.code() < 400) {
-//                    Log.d(TAG, "Error Logged");
+                    Log.d(TAG, "Error Logged");
                 } else {
-//                    Log.d(TAG, "API Failure");
+                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-//                Log.d(TAG, "API Failure");
+                Log.d(TAG, "API Failure");
             }
         });
     }

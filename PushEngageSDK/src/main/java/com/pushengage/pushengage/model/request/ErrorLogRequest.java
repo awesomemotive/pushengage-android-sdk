@@ -1,7 +1,9 @@
 package com.pushengage.pushengage.model.request;
 
+import android.os.Build;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.pushengage.pushengage.helper.PEConstants;
 
 public class ErrorLogRequest {
 
@@ -23,6 +25,26 @@ public class ErrorLogRequest {
         @Expose
         private String error;
 
+        @SerializedName("sdk_version")
+        @Expose
+        private String sdkVersion;
+
+        @SerializedName("device_name")
+        @Expose
+        private String deviceName;
+
+        @SerializedName("device_manufacturer")
+        @Expose
+        private String deviceManufacturer;
+
+        @SerializedName("device_brand_name")
+        @Expose
+        private String deviceBrandName;
+
+        @SerializedName("device_api_version")
+        @Expose
+        private Integer deviceAPIVersion;
+
         /**
          * No args constructor for use in serialization
          */
@@ -43,6 +65,19 @@ public class ErrorLogRequest {
             this.device = device;
             this.timezone = timezone;
             this.error = error;
+            this.sdkVersion = PEConstants.SDK_VERSION;
+            this.deviceName = Build.MODEL;
+            this.deviceBrandName = Build.BRAND;
+            this.deviceManufacturer = Build.MANUFACTURER;
+            this.deviceAPIVersion = Build.VERSION.SDK_INT;
+        }
+
+        public String getSdkVersion() {
+            return sdkVersion;
+        }
+
+        public void setSdkVersion(String sdkVersion) {
+            this.sdkVersion = sdkVersion;
         }
 
         public String getTag() {

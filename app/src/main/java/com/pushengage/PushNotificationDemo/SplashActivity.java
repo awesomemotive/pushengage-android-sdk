@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -21,7 +20,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         HashMap<String, String> data = (HashMap<String, String>) getIntent().getSerializableExtra("data");
         if(data!=null) {
-            Log.d("SplashActivity", new Gson().toJson(data));
+            Log.d("SplashActivityData", new Gson().toJson(data));
         }
 
         /* New Handler to start the Menu-Activity
