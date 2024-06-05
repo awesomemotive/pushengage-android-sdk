@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">PushEngage</string>
-    <string name="trigger">Trigger</string>
+    <string name="trigger">Trigger Campaigns</string>
+    <string name="sendGoal">Send Goal</string>
     <string name="add_to_cart">Add to Cart</string>
     <string name="checkout">Checkout</string>
     <string name="device_token">Device Token</string>
@@ -57,5 +58,19 @@
           }
         ]</string>
     <string name="invalid_request_format">Invalid Request Format</string>
+    <string name="disable_automated_notification">Disable Automated Notification</string>
+    <string name="enable_automated_notification">Enable Automated Notification</string>
+    <string name="send_goal">Send Goal</string>
+    <string name="send_trigger">Send Trigger</string>
+    <string name="campaign_name">Campaign Name</string>
+    <string name="event_name">Event Name</string>
+    <string name="reference_id">Reference ID</string>
+    <string name="profile_id">Profile ID</string>
+    <string name="product_id">Product ID</string>
+    <string name="link">Link</string>
+    <string name="price">Price</string>
+    <string name="variant_id">Variant ID</string>
+    <string name="expiry_timestamp">Expiry Timestamp</string>
+    <string name="alert_price">Alert Price</string>
 
 </resources>

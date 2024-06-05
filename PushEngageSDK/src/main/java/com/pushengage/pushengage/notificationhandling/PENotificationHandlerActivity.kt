@@ -4,10 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
 import com.pushengage.pushengage.Service.NotificationService
 import com.pushengage.pushengage.helper.PEConstants
+import com.pushengage.pushengage.helper.PELogger
+
 
 internal class PENotificationHandlerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,9 +44,12 @@ internal class PENotificationHandlerActivity : AppCompatActivity() {
                 val i = Intent(Intent.ACTION_VIEW)
                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 i.data = Uri.parse(url)
+                val gson = Gson()
+                val data = gson.toJson(data)
+                i.putExtra(PEConstants.DATA_EXTRA, data)
                 startActivity(i)
             } catch (e: Exception) {
-                Log.d("PENotificationHandler", "handleIntent: ${e.localizedMessage}")
+                PELogger.error("Handle navigation",e)
                 launchMainPackage(data, url)
             }
         } else {
@@ -67,7 +72,7 @@ internal class PENotificationHandlerActivity : AppCompatActivity() {
             intent?.putExtra(PEConstants.URL_EXTRA, url)
             applicationContext.startActivity(intent)
         } catch (e: Exception) {
-            Log.d("PENotificationHandler", "handleIntent: ${e.localizedMessage}")
+            PELogger.error("Launch main package", e)
         }
     }
 

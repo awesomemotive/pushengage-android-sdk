@@ -1,12 +1,13 @@
 package com.pushengage.pushengage;
 
+import static kotlin.io.TextStreamsKt.readText;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.os.Build;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,6 +32,7 @@ import com.pushengage.pushengage.DataWorker.DailySyncDataWorker;
 import com.pushengage.pushengage.DataWorker.WeeklySyncDataWorker;
 import com.pushengage.pushengage.Receiver.NetworkChangeReceiver;
 import com.pushengage.pushengage.helper.PEConstants;
+import com.pushengage.pushengage.helper.PELogger;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.RestClient.RestClient;
 import com.pushengage.pushengage.helper.PEUtilities;
@@ -39,13 +41,16 @@ import com.pushengage.pushengage.model.request.AddProfileIdRequest;
 import com.pushengage.pushengage.model.request.AddSegmentRequest;
 import com.pushengage.pushengage.model.request.AddSubscriberRequest;
 import com.pushengage.pushengage.model.request.ErrorLogRequest;
+import com.pushengage.pushengage.model.request.Goal;
 import com.pushengage.pushengage.model.request.RecordsRequest;
 import com.pushengage.pushengage.model.request.RemoveSegmentRequest;
 import com.pushengage.pushengage.model.request.SegmentHashArrayRequest;
+import com.pushengage.pushengage.model.request.TriggerAlert;
+import com.pushengage.pushengage.model.request.TriggerCampaign;
 import com.pushengage.pushengage.model.request.UpdateTriggerStatusRequest;
 import com.pushengage.pushengage.model.response.AddSubscriberResponse;
 import com.pushengage.pushengage.model.response.AndroidSyncResponse;
-import com.pushengage.pushengage.model.response.GenricResponse;
+import com.pushengage.pushengage.model.response.NetworkResponse;
 import com.pushengage.pushengage.model.response.RecordsResponse;
 
 import org.json.JSONObject;
@@ -53,7 +58,6 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +78,21 @@ public class PushEngage {
     private static final int DELAY = 180000;
     private static UpdateTriggerStatusRequest updateTriggerStatusRequest;
     private static Boolean isFirebaseApiCallInProgress = false;
+    private static PEManagerType peManager;
+
+    public enum TriggerAlertAvailabilityType {
+        inStock,
+        outOfStock
+    }
+    public enum TriggerStatusType {
+        enabled,
+        disabled
+    }
+
+    public enum TriggerAlertType {
+        priceDrop,
+        inventory
+    }
 
     public interface SubscriberFields {
         String City = "city";
@@ -101,6 +120,7 @@ public class PushEngage {
         registerNetworkReceiver();
         addSubscribeRetryCount = 0;
         siteSyncRetryCount = 0;
+        peManager = new PEManager(context, prefs);
         if (TextUtils.isEmpty(prefs.getHash())) {
             subscribe();
         }
@@ -215,44 +235,187 @@ public class PushEngage {
     }
 
     /**
-     * Trigger Add Records
+     * Enables or disables logging for the PushEngage library based on the specified boolean value.
      *
-     * @param callback
-     * @param campaignName
-     * @param eventName
-     * @param title
-     * @param message
-     * @param notificationUrl
-     * @param notificationImage
-     * @param bigImage
+     * @param shouldEnable A boolean value indicating whether logging should be enabled or
+     *                     disabled.
+     *
+     * Example usage:
+     * PushEngage.enableLogging(true);
+     *
      */
-    private static void triggerAddRecords(PushEngageResponseCallback callback, String campaignName, String eventName, Map<String, String> title, Map<String, String> message, Map<String, String> notificationUrl, Map<String, String> notificationImage, Map<String, String> bigImage) {
-        RecordsRequest recordsRequest = new RecordsRequest();
-        RecordsRequest.Data data = recordsRequest.new Data(campaignName, eventName, title, message, notificationUrl, notificationImage, bigImage, prefs.getHash(), prefs.getSiteId());
-        recordsRequest.setData(data);
-        recordsRequest.setPartitionKey(prefs.getHash());
-        callAddRecords(recordsRequest, callback);
+    public static void enableLogging(Boolean shouldEnable) {
+        PELogger.enableLogging(shouldEnable);
     }
 
     /**
-     * Trigger Add Records with checkout Data
+     * Allows to enable or disable trigger campaigns for a subscriber
+     * with the specified callback and trigger status.
      *
-     * @param callback
-     * @param campaignName
-     * @param eventName
-     * @param title
-     * @param message
-     * @param notificationUrl
-     * @param notificationImage
-     * @param bigImage
-     * @param checkoutData
+     * @param status   The trigger status type indicating the status of the trigger campaign.
+     *                  See {@link TriggerStatusType} for possible values.
+     * @param callback A callback interface to handle API response asynchronously.
+     *                 Implement the {@link PushEngageResponseCallback} interface to receive
+     *                 success or failure callbacks.
+
+     *
+     * Example usage:
+     * PushEngage.automatedNotification(PushEngage.TriggerStatusType.enabled, object : PushEngageResponseCallback {
+     *                 override fun onSuccess(responseObject: Any?) {
+     *                     Toast.makeText(this@TriggerCampaignActivity, "Trigger Enabled successfully", Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *                 override fun onFailure(errorCode: Int?, errorMessage: String?) {
+     *                     Toast.makeText(this@TriggerCampaignActivity, "Trigger Enabled failed", Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *             })
      */
-    private static void triggerAddRecords(PushEngageResponseCallback callback, String campaignName, String eventName, Map<String, String> title, Map<String, String> message, Map<String, String> notificationUrl, Map<String, String> notificationImage, Map<String, String> bigImage, Map<String, String> checkoutData) {
-        RecordsRequest recordsRequest = new RecordsRequest();
-        RecordsRequest.Data data = recordsRequest.new Data(campaignName, eventName, title, message, notificationUrl, notificationImage, bigImage, prefs.getHash(), prefs.getSiteId(), checkoutData);
-        recordsRequest.setData(data);
-        recordsRequest.setPartitionKey(prefs.getHash());
-        callAddRecords(recordsRequest, callback);
+    public static void automatedNotification(TriggerStatusType status, PushEngageResponseCallback callback) {
+        peManager.automatedNotification(status, callback);
+    }
+
+    /**
+     * Allows to enable or disable trigger campaigns for a subscriber
+     * with a trigger status.
+     *
+     * @param status The trigger status type indicating the status of the trigger campaign.
+     *               See {@link TriggerStatusType} for possible values.
+     *
+     * Example usage:
+     * PushEngage.automatedNotification(PushEngage.TriggerStatusType.enabled)
+     */
+    public static void automatedNotification(TriggerStatusType status) {
+        automatedNotification(status, null);
+    }
+
+    /**
+     * Sends a trigger event for a specific campaign with the provided callback for handling the response.
+     *
+     * @param trigger  The {@link TriggerCampaign} object representing the campaign event to be triggered.
+     * @param callback A callback interface to handle API response asynchronously.
+     *                 Implement the {@link PushEngageResponseCallback} interface to receive
+     *                 success or failure callbacks.
+     *
+     * Example usage:
+     * val triggerCampaign = TriggerCampaign(
+     *                 "name_of_campaign",
+     *                 "event_name_of_trigger")
+     *
+     * PushEngage.sendTriggerEvent(triggerCampaign, object : PushEngageResponseCallback {
+     *                 override fun onSuccess(responseObject: Any?) {
+     *                     Toast.makeText(this@TriggerEntryActivity,"Send Trigger Alert Successfully", Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *                 override fun onFailure(errorCode: Int?, errorMessage: String?) {
+     *                     Toast.makeText(this@TriggerEntryActivity,errorMessage.toString(), Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *             })
+     */
+    public static void sendTriggerEvent(TriggerCampaign trigger, PushEngageResponseCallback callback) {
+        peManager.sendTriggerEvent(trigger, callback);
+    }
+
+    /**
+     * Sends a trigger event for a specific campaign.
+     *
+     * @param trigger  The {@link TriggerCampaign} object representing the campaign event to be triggered.
+     *
+     * Example usage:
+     * val triggerCampaign = TriggerCampaign(
+     *                 "name_of_campaign",
+     *                 "event_name_of_trigger")
+     *
+     * PushEngage.sendTriggerEvent(triggerCampaign)
+     */
+    public static void sendTriggerEvent(TriggerCampaign trigger) {
+        sendTriggerEvent(trigger, null);
+    }
+
+    /**
+     * Sends a goal event with the provided callback for handling the response.
+     *
+     * @param goal     The {@link Goal} object representing the goal to be tracked.
+     * @param callback A callback interface to handle API response asynchronously.
+     *                 Implement the {@link PushEngageResponseCallback} interface to receive
+     *                 success or failure callbacks.
+     *
+     * Example usage:
+     * val goal = Goal("revenue", 1,  10)
+     * PushEngage.sendGoal(goal, object: PushEngageResponseCallback {
+     *             override fun onSuccess(responseObject: Any?) {
+     *                 Toast.makeText(this@GoalActivity, "Success", Toast.LENGTH_LONG).show()
+     *             }
+     *
+     *             override fun onFailure(errorCode: Int?, errorMessage: String?) {
+     *                 Toast.makeText(this@GoalActivity, "Failure", Toast.LENGTH_LONG).show()
+     *             }
+     *         })
+     */
+    public static void sendGoal(Goal goal, PushEngageResponseCallback callback) {
+        peManager.sendGoal(goal, callback);
+    }
+
+    /**
+     * Sends a goal event.
+     *
+     * @param goal The {@link Goal} object representing the completed goal to be tracked.
+     *
+     * Example usage:
+     * val goal = Goal("revenue", 1,  10)
+     * PushEngage.sendGoal(goal)
+     */
+    public static void sendGoal(Goal goal) {
+        sendGoal(goal, null);
+    }
+
+    /**
+     * Adds an alert to be triggered with the provided callback for handling the response.
+     *
+     * @param alert    The {@link TriggerAlert} object representing the alert to be added.
+     * @param callback A callback interface to handle API response asynchronously.
+     *                 Implement the {@link PushEngageResponseCallback} interface to receive
+     *                 success or failure callbacks.
+     *
+     * Example usage:
+     * val triggerAlert = TriggerAlert(
+     *                 TriggerAlertType.inventory,
+     *                 "product_id",
+     *                 "link",
+     *                 20.0)
+     *
+     * PushEngage.addAlert(triggerAlert, object : PushEngageResponseCallback {
+     *                 override fun onSuccess(responseObject: Any?) {
+     *                     Toast.makeText(this@AddAlertActivity, "Add Alert Successfully", Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *                 override fun onFailure(errorCode: Int?, errorMessage: String?) {
+     *                     Toast.makeText(this@AddAlertActivity, errorMessage, Toast.LENGTH_LONG).show()
+     *                 }
+     *
+     *             })
+     */
+    public static void addAlert(TriggerAlert alert, PushEngageResponseCallback callback) {
+        peManager.addAlert(alert, callback);
+    }
+
+    /**
+     * Adds an alert to be triggered.
+     *
+     * @param alert The {@link TriggerAlert} object representing the alert to be added.
+     *
+     * Example usage:
+     * val triggerAlert = TriggerAlert(
+     *                 TriggerAlertType.inventory,
+     *                 "product_id",
+     *                 "link",
+     *                 20.0)
+     *
+     * PushEngage.addAlert(triggerAlert)
+     */
+    public static void addAlert(TriggerAlert alert) {
+        addAlert(alert, null);
     }
 
     /**
@@ -261,7 +424,7 @@ public class PushEngage {
      * on the site status and notification preferences.
      */
     private static void callAndroidSync() {
-        Log.d(TAG, " SiteKey = " + prefs.getSiteKey());
+        PELogger.debug("Sync for SiteKey = " + prefs.getSiteKey() + " called");
         if (PEUtilities.checkNetworkConnection(context)) {
             Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(context).androidSync(prefs.getSiteKey());
             addRecordsResponseCall.enqueue(new Callback<AndroidSyncResponse>() {
@@ -307,7 +470,7 @@ public class PushEngage {
                               Handles server response indicating non-active site status.
                              */
                             prefs.setIsSubscriberDeleted(true);
-                            Log.d(TAG, "Site Status = " + androidSyncResponse.getData().getSiteStatus());
+                            PELogger.debug("Site Status = " + androidSyncResponse.getData().getSiteStatus());
                         }
                     } else {
                         siteSyncRetryCount++;
@@ -449,41 +612,6 @@ public class PushEngage {
     }
 
     /**
-     * API request to add Trigger records
-     *
-     * @param recordsRequest
-     * @param callback
-     */
-    private static void callAddRecords(RecordsRequest recordsRequest, PushEngageResponseCallback callback) {
-        String validationResult = PEUtilities.apiPreValidate(context);
-        if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            Call<RecordsResponse> addRecordsResponseCall = RestClient.getTriggerClient(context).records(recordsRequest);
-            addRecordsResponseCall.enqueue(new Callback<RecordsResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<RecordsResponse> call, @NonNull Response<RecordsResponse> response) {
-                    if (response.isSuccessful()) {
-                        RecordsResponse addRecordsResponse = response.body();
-                        if (callback != null)
-                            callback.onSuccess(null);
-                    } else {
-                        if (callback != null)
-                            callback.onFailure(response.code(), response.message());
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<RecordsResponse> call, @NonNull Throwable t) {
-                    if (callback != null)
-                        callback.onFailure(400, t.getMessage());
-                }
-            });
-        } else {
-            if (callback != null)
-                callback.onFailure(400, validationResult);
-        }
-    }
-
-    /**
      * Retrieves the last notification payload data received by the client app.
      *
      * @return A {@code String} representing the last notification payload data stored in preferences.
@@ -573,18 +701,18 @@ public class PushEngage {
     public static void getSubscriberDetails(List<String> values, PushEngageResponseCallback callback) {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            Call<GenricResponse> subscriberDetailsResponseCall = RestClient.getBackendClient(context).subscriberDetails(prefs.getHash(), values);
-            subscriberDetailsResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> subscriberDetailsResponseCall = RestClient.getBackendClient(context).subscriberDetails(prefs.getHash(), values);
+            subscriberDetailsResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
-                        GenricResponse genericResponse = response.body();
+                        NetworkResponse genericResponse = response.body();
                         if (callback != null && genericResponse != null)
                             callback.onSuccess(genericResponse.getData());
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -599,7 +727,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -620,18 +748,18 @@ public class PushEngage {
     public static void getSubscriberAttributes(PushEngageResponseCallback callback) {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            Call<GenricResponse> getSubscriberAttributesResponseCall = RestClient.getBackendClient(context).getSubscriberAttributes(prefs.getHash());
-            getSubscriberAttributesResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> getSubscriberAttributesResponseCall = RestClient.getBackendClient(context).getSubscriberAttributes(prefs.getHash());
+            getSubscriberAttributesResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
-                        GenricResponse genericResponse = response.body();
+                        NetworkResponse genericResponse = response.body();
                         if (callback != null && genericResponse != null)
                             callback.onSuccess(genericResponse.getData());
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -646,7 +774,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, validationResult);
                 }
@@ -680,17 +808,17 @@ public class PushEngage {
     public static void deleteSubscriberAttributes(List<String> values, PushEngageResponseCallback callback) {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            Call<GenricResponse> deleteSubscriberAttributesResponseCall = RestClient.getBackendClient(context).deleteSubscriberAttributes(prefs.getHash(), values);
-            deleteSubscriberAttributesResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> deleteSubscriberAttributesResponseCall = RestClient.getBackendClient(context).deleteSubscriberAttributes(prefs.getHash(), values);
+            deleteSubscriberAttributesResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -705,7 +833,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -740,17 +868,17 @@ public class PushEngage {
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = (JsonObject) jsonParser.parse(obj.toString());
-            Call<GenricResponse> addSubscriberAttributesResponseCall = RestClient.getBackendClient(context).addAttributes(prefs.getHash(), jsonObject);
-            addSubscriberAttributesResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> addSubscriberAttributesResponseCall = RestClient.getBackendClient(context).addAttributes(prefs.getHash(), jsonObject);
+            addSubscriberAttributesResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -765,7 +893,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -801,17 +929,17 @@ public class PushEngage {
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = (JsonObject) jsonParser.parse(obj.toString());
-            Call<GenricResponse> addSubscriberAttributesResponseCall = RestClient.getBackendClient(context).setAttributes(prefs.getHash(), jsonObject);
-            addSubscriberAttributesResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> addSubscriberAttributesResponseCall = RestClient.getBackendClient(context).setAttributes(prefs.getHash(), jsonObject);
+            addSubscriberAttributesResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -826,7 +954,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -862,17 +990,17 @@ public class PushEngage {
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             AddProfileIdRequest addProfileIdRequest = new AddProfileIdRequest(
                     prefs.getHash(), profileId, prefs.getSiteId(), PEConstants.ANDROID);
-            Call<GenricResponse> addProfileIdResponseCall = RestClient.getBackendClient(context).addProfileId(addProfileIdRequest);
-            addProfileIdResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> addProfileIdResponseCall = RestClient.getBackendClient(context).addProfileId(addProfileIdRequest);
+            addProfileIdResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -887,7 +1015,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -922,17 +1050,17 @@ public class PushEngage {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             AddSegmentRequest addSegmentRequest = new AddSegmentRequest(prefs.getHash(), segmentId, prefs.getSiteId(), PEConstants.ANDROID);
-            Call<GenricResponse> addSegmentResponseCall = RestClient.getBackendClient(context).addSegments(addSegmentRequest);
-            addSegmentResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> addSegmentResponseCall = RestClient.getBackendClient(context).addSegments(addSegmentRequest);
+            addSegmentResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -948,7 +1076,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -985,17 +1113,17 @@ public class PushEngage {
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             RemoveSegmentRequest removeSegmentRequest = new RemoveSegmentRequest(
                     prefs.getHash(), segmentId, prefs.getSiteId(), PEConstants.ANDROID);
-            Call<GenricResponse> removeSegmentResponseCall = RestClient.getBackendClient(context).removeSegments(removeSegmentRequest);
-            removeSegmentResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> removeSegmentResponseCall = RestClient.getBackendClient(context).removeSegments(removeSegmentRequest);
+            removeSegmentResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -1010,7 +1138,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -1047,17 +1175,17 @@ public class PushEngage {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             AddDynamicSegmentRequest addDynamicSegmentRequest = new AddDynamicSegmentRequest(prefs.getHash(), prefs.getSiteId(), PEConstants.ANDROID, segments);
-            Call<GenricResponse> addDynamicSegmentResponseCall = RestClient.getBackendClient(context).addDynamicSegments(addDynamicSegmentRequest);
-            addDynamicSegmentResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> addDynamicSegmentResponseCall = RestClient.getBackendClient(context).addDynamicSegments(addDynamicSegmentRequest);
+            addDynamicSegmentResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -1072,7 +1200,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -1093,17 +1221,17 @@ public class PushEngage {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
             SegmentHashArrayRequest segmentHashArrayRequest = new SegmentHashArrayRequest(prefs.getHash(), prefs.getSiteId(), segmentId);
-            Call<GenricResponse> segmentHashArrayResponseCall = RestClient.getBackendClient(context).getSegmentHashArray(segmentHashArrayRequest);
-            segmentHashArrayResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> segmentHashArrayResponseCall = RestClient.getBackendClient(context).getSegmentHashArray(segmentHashArrayRequest);
+            segmentHashArrayResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -1118,7 +1246,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }
@@ -1137,18 +1265,17 @@ public class PushEngage {
     private static void checkSubscriberHash(PushEngageResponseCallback callback) {
         String validationResult = PEUtilities.apiPreValidate(context);
         if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            Call<GenricResponse> checkSubscriberHashResponseCall = RestClient.getBackendClient(context).checkSubscriberHash(prefs.getHash());
-            checkSubscriberHashResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> checkSubscriberHashResponseCall = RestClient.getBackendClient(context).checkSubscriberHash(prefs.getHash());
+            checkSubscriberHashResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
                         if (callback != null)
                             callback.onSuccess(null);
                     } else {
-//                        Log.d(TAG, "API Failure");
                         if (response.errorBody() != null) {
                             try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
+                                JSONObject jsonObj = new JSONObject(readText(response.errorBody().charStream()));
                                 if (callback != null)
                                     callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
                             } catch (Exception e) {
@@ -1163,58 +1290,7 @@ public class PushEngage {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
-//                    Log.d(TAG, "API Failure");
-                    if (callback != null)
-                        callback.onFailure(400, t.getMessage());
-                }
-            });
-        } else {
-            if (callback != null)
-                callback.onFailure(400, validationResult);
-        }
-    }
-
-    /**
-     * API call to update Trigger Status
-     *
-     * @param triggerStatus
-     * @param callback
-     */
-    private static void updateTriggerStatus(Integer triggerStatus, PushEngageResponseCallback callback) {
-        String validationResult = PEUtilities.apiPreValidate(context);
-        if (validationResult.equalsIgnoreCase(PEConstants.VALID)) {
-            UpdateTriggerStatusRequest updateTriggerStatusRequest =
-                    new UpdateTriggerStatusRequest(prefs.getSiteId(), prefs.getHash(), triggerStatus);
-            updateTriggerStatusRequest.setDeviceTokenHash(prefs.getHash());
-            Call<GenricResponse> updateTriggerStatusResponseCall = RestClient.getBackendClient(context).updateTriggerStatus(updateTriggerStatusRequest);
-            updateTriggerStatusResponseCall.enqueue(new Callback<GenricResponse>() {
-                @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
-                    if (response.isSuccessful()) {
-                        if (callback != null)
-                            callback.onSuccess(null);
-                    } else {
-//                        Log.d(TAG, "API Failure");
-                        if (response.errorBody() != null) {
-                            try {
-                                JSONObject jsonObj = new JSONObject(TextStreamsKt.readText(response.errorBody().charStream()));
-                                if (callback != null)
-                                    callback.onFailure(jsonObj.getInt("error_code"), jsonObj.getString("error_message"));
-                            } catch (Exception e) {
-                                if (callback != null)
-                                    callback.onFailure(response.code(), context.getString(R.string.server_error));
-                            }
-                        } else {
-                            if (callback != null)
-                                callback.onFailure(response.code(), context.getString(R.string.server_error));
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
-//                    Log.d(TAG, "API Failure");
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (callback != null)
                         callback.onFailure(400, t.getMessage());
                 }

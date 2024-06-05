@@ -5,17 +5,16 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.pushengage.pushengage.BuildConfig;
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.R;
 import com.pushengage.pushengage.helper.PEConstants;
+import com.pushengage.pushengage.helper.PELogger;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.AddDynamicSegmentRequest;
@@ -24,20 +23,23 @@ import com.pushengage.pushengage.model.request.AddSegmentRequest;
 import com.pushengage.pushengage.model.request.AddSubscriberRequest;
 import com.pushengage.pushengage.model.request.ErrorLogRequest;
 import com.pushengage.pushengage.model.request.FetchRequest;
+import com.pushengage.pushengage.model.request.GoalRequest;
 import com.pushengage.pushengage.model.request.RecordsRequest;
 import com.pushengage.pushengage.model.request.RemoveDynamicSegmentRequest;
 import com.pushengage.pushengage.model.request.RemoveSegmentRequest;
 import com.pushengage.pushengage.model.request.SegmentHashArrayRequest;
+import com.pushengage.pushengage.model.request.TriggerCampaignRequest;
+import com.pushengage.pushengage.model.request.TriggerCampaignRequestModel;
+import com.pushengage.pushengage.model.request.TriggerCampaignResponse;
 import com.pushengage.pushengage.model.request.UpdateSubscriberRequest;
 import com.pushengage.pushengage.model.request.UpdateSubscriberStatusRequest;
 import com.pushengage.pushengage.model.request.UpdateTriggerStatusRequest;
 import com.pushengage.pushengage.model.request.UpgradeSubscriberRequest;
 import com.pushengage.pushengage.model.response.AddSubscriberResponse;
 import com.pushengage.pushengage.model.response.AndroidSyncResponse;
-import com.pushengage.pushengage.model.response.ChannelResponse;
 import com.pushengage.pushengage.model.response.ChannelResponseModel;
 import com.pushengage.pushengage.model.response.FetchResponse;
-import com.pushengage.pushengage.model.response.GenricResponse;
+import com.pushengage.pushengage.model.response.NetworkResponse;
 import com.pushengage.pushengage.model.response.RecordsResponse;
 
 import org.json.JSONException;
@@ -47,7 +49,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
@@ -55,7 +56,6 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.Buffer;
@@ -69,7 +69,6 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 public class RestClient {
 
@@ -118,8 +117,13 @@ public class RestClient {
 
     public static Retrofit getRetrofitClient(Map<String, String> headers, String urlType) {
         String baseUrl = getBaseUrl(urlType);
+
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        if(PELogger.isLoggingEnabled()) {
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        } else {
+            interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        }
 
         OkHttpClient.Builder okClientBuilder = new OkHttpClient().newBuilder();
         okClientBuilder.addInterceptor(interceptor);
@@ -128,7 +132,6 @@ public class RestClient {
             @Override
             public okhttp3.Response intercept(Chain chain) throws IOException {
                 Request.Builder requestBuilder = chain.request().newBuilder();
-                String versionRelease = Build.VERSION.RELEASE;
                 PackageInfo pInfo = null;
                 String sdkVersion = "";
                 try {
@@ -138,8 +141,16 @@ public class RestClient {
 //                    e.printStackTrace();
                 }
                 requestBuilder.addHeader("content-type", "application/json");
-                requestBuilder.addHeader("swv", sdkVersion);
-                requestBuilder.addHeader("bv", versionRelease);
+
+                requestBuilder.addHeader("X-Pe-Client", "Android");
+                requestBuilder.addHeader("X-Pe-Client-Version", Build.VERSION.RELEASE);
+                requestBuilder.addHeader("X-Pe-Sdk-Version", sdkVersion);
+                requestBuilder.addHeader("X-Pe-App-Id", prefs.getSiteKey());
+
+                String userAgent = String.format("android-%s/sdk-%s/app-%s", Build.VERSION.RELEASE, sdkVersion, prefs.getSiteKey());
+                requestBuilder.removeHeader("User-Agent");
+                requestBuilder.addHeader("User-Agent", userAgent);
+
                 if (headers != null) {
                     for (Map.Entry<String, String> entry : headers.entrySet()) {
                         requestBuilder.addHeader(entry.getKey(), entry.getValue());
@@ -174,7 +185,6 @@ public class RestClient {
         okClientBuilder.readTimeout(30, TimeUnit.SECONDS)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .build();
-
         Gson gson = new GsonBuilder().setLenient().create();
         Retrofit retrofitClient = new Retrofit.Builder()
                 .baseUrl(baseUrl)
@@ -368,59 +378,71 @@ public class RestClient {
         @PUT()
         Call<RecordsResponse> records(@Body RecordsRequest recordsRequest);
 
+        @POST("subscriber/updatetriggerstatus")
+        Call<NetworkResponse> automatedNotification(@Body UpdateTriggerStatusRequest updateTriggerStatusRequest, @Query("swv") String swv, @Query("bv") String bv);
+
+        @POST("goals")
+        Call<NetworkResponse> sendGoal(@Body GoalRequest goalRequest, @Query("swv") String swv, @Query("bv") String bv);
+
+        @PUT(".")
+        Call<TriggerCampaignResponse> sendTriggerEvent(@Body TriggerCampaignRequestModel triggerCampaignRequestModel);
+
+        @POST("alerts")
+        Call<NetworkResponse> addAlert(@Body Map<String, Object> requestBody, @Query("swv") String swv, @Query("bv") String bv);
+
         @POST("notification/fetch")
         Call<FetchResponse> fetch(@Body FetchRequest fetchRequest);
 
         @GET("notification/click")
-        Call<GenricResponse> notificationClick(@Query("device_token_hash") String device_hash, @Query("tag") String tag, @Query("action") String action, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
+        Call<NetworkResponse> notificationClick(@Query("device_token_hash") String device_hash, @Query("tag") String tag, @Query("action") String action, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
 
         @GET("notification/view")
-        Call<GenricResponse> notificationView(@Query("device_token_hash") String device_token_hash, @Query("tag") String tag, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
+        Call<NetworkResponse> notificationView(@Query("device_token_hash") String device_token_hash, @Query("tag") String tag, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
 
         @PUT("subscriber/{id}")
-        Call<GenricResponse> updateSubscriberHash(@Path("id") String id, @Body UpdateSubscriberRequest updateSubscriberRequest, @Query("swv") String swv, @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
+        Call<NetworkResponse> updateSubscriberHash(@Path("id") String id, @Body UpdateSubscriberRequest updateSubscriberRequest, @Query("swv") String swv, @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
 
         @GET("subscriber/{id}")
-        Call<GenricResponse> subscriberDetails(@Path("id") String id, @Query("fields") List<String> fields);
+        Call<NetworkResponse> subscriberDetails(@Path("id") String id, @Query("fields") List<String> fields);
 
         @GET("subscriber/{id}/attributes")
-        Call<GenricResponse> getSubscriberAttributes(@Path("id") String id);
+        Call<NetworkResponse> getSubscriberAttributes(@Path("id") String id);
 
         @HTTP(method = "DELETE", path = "subscriber/{id}/attributes", hasBody = true)
-        Call<GenricResponse> deleteSubscriberAttributes(@Path("id") String id, @Body List<String> value);
+        Call<NetworkResponse> deleteSubscriberAttributes(@Path("id") String id, @Body List<String> value);
 
         @PUT("subscriber/{id}/attributes")
-        Call<GenricResponse> addAttributes(@Path("id") String id, @Body JsonObject jsonObject);
+        Call<NetworkResponse> addAttributes(@Path("id") String id, @Body JsonObject jsonObject);
 
         @POST("subscriber/{id}/attributes")
-        Call<GenricResponse> setAttributes(@Path("id") String id, @Body JsonObject jsonObject);
+        Call<NetworkResponse> setAttributes(@Path("id") String id, @Body JsonObject jsonObject);
 
         @POST("subscriber/profile-id/add")
-        Call<GenricResponse> addProfileId(@Body AddProfileIdRequest addProfileIdRequest);
+        Call<NetworkResponse> addProfileId(@Body AddProfileIdRequest addProfileIdRequest);
 
         @POST("subscriber/segments/add")
-        Call<GenricResponse> addSegments(@Body AddSegmentRequest addSegmentRequest);
+        Call<NetworkResponse> addSegments(@Body AddSegmentRequest addSegmentRequest);
 
         @POST("subscriber/segments/remove")
-        Call<GenricResponse> removeSegments(@Body RemoveSegmentRequest removeSegmentRequest);
+        Call<NetworkResponse> removeSegments(@Body RemoveSegmentRequest removeSegmentRequest);
 
         @POST("subscriber/dynamicSegments/add")
-        Call<GenricResponse> addDynamicSegments(@Body AddDynamicSegmentRequest addDynamicSegmentRequest);
+        Call<NetworkResponse> addDynamicSegments(@Body AddDynamicSegmentRequest addDynamicSegmentRequest);
 
         @POST("subscriber/dynamicSegments/remove")
-        Call<GenricResponse> removeDynamicSegments(@Body RemoveDynamicSegmentRequest removeDynamicSegmentRequest);
+        Call<NetworkResponse> removeDynamicSegments(@Body RemoveDynamicSegmentRequest removeDynamicSegmentRequest);
 
         @POST("subscriber/segments/segmentHashArray")
-        Call<GenricResponse> getSegmentHashArray(@Body SegmentHashArrayRequest segmentHashArrayRequest);
+        Call<NetworkResponse> getSegmentHashArray(@Body SegmentHashArrayRequest segmentHashArrayRequest);
 
         @GET("subscriber/check/{id}")
-        Call<GenricResponse> checkSubscriberHash(@Path("id") String id);
+        Call<NetworkResponse> checkSubscriberHash(@Path("id") String id);
 
         @POST("subscriber/updatetriggerstatus")
-        Call<GenricResponse> updateTriggerStatus(@Body UpdateTriggerStatusRequest updateTriggerStatusRequest);
+        Call<NetworkResponse> updateTriggerStatus(@Body UpdateTriggerStatusRequest updateTriggerStatusRequest);
 
         @POST("subscriber/updatesubscriberstatus")
-        Call<GenricResponse> updateSubscriberStatus(@Body UpdateSubscriberStatusRequest updateSubscriberStatusRequest);
+        Call<NetworkResponse> updateSubscriberStatus(@Body UpdateSubscriberStatusRequest updateSubscriberStatusRequest);
 
         @POST("logs")
         Call<ResponseBody> logs(@Body ErrorLogRequest errorLogRequest);

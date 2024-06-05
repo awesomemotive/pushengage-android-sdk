@@ -12,6 +12,7 @@ import com.pushengage.pushengage.Database.DaoInterface
 import com.pushengage.pushengage.Database.PERoomDatabase
 import com.pushengage.pushengage.RestClient.RestClient
 import com.pushengage.pushengage.helper.PEConstants
+import com.pushengage.pushengage.helper.PELogger
 import com.pushengage.pushengage.helper.PEPrefs
 import com.pushengage.pushengage.model.payload.FCMPayloadModel
 import com.pushengage.pushengage.model.request.FetchRequest
@@ -31,12 +32,12 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
     private var daoInterface: DaoInterface? = null
 
     override fun onMessageReceived(message: RemoteMessage) {
-        Log.d(TAG, "From: " + message.from)
+        PELogger.debug("From: " + message.from)
         initializeDependencies()
         setPayloadInPreferences(message)
 
         if (hasDataPayload(message)) {
-            Log.d(TAG, "RemoteMessage data payload: " + message.data)
+            PELogger.debug("RemoteMessage data payload: " + message.data)
         }
         try {
             val jsonObject = (message.data as? Map<*, *>?)?.let { JSONObject(it) }
@@ -59,7 +60,7 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
 
             }
         } catch (e: Exception) {
-            Log.d(TAG, "onMessageReceived: ${e.localizedMessage}")
+            PELogger.error("onMessageReceived: error", e)
         }
     }
 
@@ -143,7 +144,7 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
                 peNotificationManager.setChannelInformation(id, payload, false, notificationBuilder, false)
             }
         } catch (e: Exception) {
-            Log.d(TAG, e.localizedMessage)
+            PELogger.error("sendNotification: error", e)
         }
     }
 
