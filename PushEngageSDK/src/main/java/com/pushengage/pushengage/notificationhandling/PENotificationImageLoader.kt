@@ -10,8 +10,10 @@ import androidx.core.app.NotificationCompat.Builder
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.pushengage.pushengage.helper.PELogger
 import com.pushengage.pushengage.model.payload.FCMPayloadModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -96,9 +98,13 @@ internal class PENotificationImageLoader(private val context: Context) : PENotif
                         override fun onLoadCleared(placeholder: Drawable?) {
                             continuation.resume(null)
                         }
+
+                        override fun onLoadFailed(errorDrawable: Drawable?) {
+                            continuation.resume(null)
+                        }
                     })
         } catch (e: Exception) {
-            Log.d("PEImageLoader", "loadImage: ${e.localizedMessage}")
+            PELogger.error("PEImageLoader", e)
             continuation.resume(null)
         }
     }

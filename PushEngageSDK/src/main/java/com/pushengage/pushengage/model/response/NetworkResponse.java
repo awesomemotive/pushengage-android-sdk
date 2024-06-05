@@ -3,7 +3,7 @@ package com.pushengage.pushengage.model.response;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class GenricResponse {
+public class NetworkResponse {
 
     @SerializedName("error_code")
     @Expose
@@ -21,7 +21,7 @@ public class GenricResponse {
     /**
      * No args constructor for use in serialization
      */
-    public GenricResponse() {
+    public NetworkResponse() {
     }
 
     /**
@@ -30,7 +30,7 @@ public class GenricResponse {
      * @param errorCode
      * @param error
      */
-    public GenricResponse(Long errorCode, Object data, String errorMessage, Error error) {
+    public NetworkResponse(Long errorCode, Object data, String errorMessage, Error error) {
         super();
         this.errorCode = errorCode;
         this.data = data;

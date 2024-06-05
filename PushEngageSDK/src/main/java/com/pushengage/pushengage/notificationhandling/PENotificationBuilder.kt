@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat.Builder
 import com.google.gson.Gson
 import com.pushengage.pushengage.R
 import com.pushengage.pushengage.helper.PEConstants
+import com.pushengage.pushengage.helper.PELogger
 import com.pushengage.pushengage.helper.PEPrefs
 import com.pushengage.pushengage.model.PENotificationPriority
 import com.pushengage.pushengage.model.payload.FCMPayloadModel
@@ -136,7 +137,7 @@ internal class PENotificationBuilder(private val context: Context,
                     notificationBuilder.addAction(iconResourceId, actionButton.label, actionButtonsPendingIntent)
                 }
             } catch (e: JSONException) {
-                Log.d(className, "createActionButtons: "+ e.localizedMessage)
+                PELogger.error("Create notification action buttons", e)
             }
         }
     }
@@ -174,7 +175,7 @@ internal class PENotificationBuilder(private val context: Context,
             val resources: Resources = context.applicationContext.resources
             resources.getIdentifier(iconName, "drawable", context.applicationContext.packageName)
         } catch (e: Exception) {
-            Log.d(className, "getActionButtonIconResourceId: "+ e.localizedMessage)
+            PELogger.error("Retrieve action button icon", e)
             return 0
         }
     }
@@ -260,7 +261,7 @@ internal class PENotificationBuilder(private val context: Context,
                 notificationBuilder.setGroup(groupKey)
             }
         } catch (e: Exception) {
-            Log.d(className, "setGroupKey: "+ e.localizedMessage)
+            PELogger.error("Set notification group key", e)
         }
     }
 

@@ -2,7 +2,6 @@ package com.pushengage.pushengage.servicehandling
 
 import android.app.NotificationManager
 import android.content.Context
-import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -13,6 +12,7 @@ import com.pushengage.pushengage.PushEngage
 import com.pushengage.pushengage.R
 import com.pushengage.pushengage.RestClient.RestClient
 import com.pushengage.pushengage.helper.PEConstants
+import com.pushengage.pushengage.helper.PELogger
 import com.pushengage.pushengage.helper.PEPrefs
 import com.pushengage.pushengage.helper.PEUtilities
 import com.pushengage.pushengage.model.payload.FCMPayloadModel
@@ -21,7 +21,7 @@ import com.pushengage.pushengage.model.request.FetchRequest
 import com.pushengage.pushengage.model.request.UpdateSubscriberStatusRequest
 import com.pushengage.pushengage.model.response.ChannelResponseModel
 import com.pushengage.pushengage.model.response.FetchResponse
-import com.pushengage.pushengage.model.response.GenricResponse
+import com.pushengage.pushengage.model.response.NetworkResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -90,7 +90,7 @@ internal class PEServiceHandler(private val context: Context,
             override fun onResponse(call: Call<ChannelResponseModel>, response: Response<ChannelResponseModel>) {
                 if (response.isSuccessful) {
                     val channelResponse = response.body()
-                    Log.d(className, "onResponse: ${channelResponse?.data?.options?.importance}")
+                    PELogger.debug("Channel Information: ${channelResponse?.data?.options?.importance}")
                     val channelEntity = ChannelEntity(
                             channelResponse?.data?.channelId?.toString(),
                             channelResponse?.data?.channelName ?: "",
@@ -133,11 +133,11 @@ internal class PEServiceHandler(private val context: Context,
         val notificationViewResponseCall = RestClient.getAnalyticsClient(context.applicationContext, headerMap)
                 .notificationView(pePrefs.hash, tag, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone())
 
-        notificationViewResponseCall.enqueue(object : Callback<GenricResponse> {
-            override fun onResponse(call: Call<GenricResponse>, response: Response<GenricResponse>) {
+        notificationViewResponseCall.enqueue(object : Callback<NetworkResponse> {
+            override fun onResponse(call: Call<NetworkResponse>, response: Response<NetworkResponse>) {
                 if (response.isSuccessful) {
                     val genericResponse = response.body()
-                    Log.d(className, "Notification View API Success")
+                    PELogger.debug("Notification View API Success")
                 } else {
                     if (!isRetry) {
                         Timer().schedule(object : TimerTask() {
@@ -147,12 +147,12 @@ internal class PEServiceHandler(private val context: Context,
                         }, PEConstants.RETRY_DELAY.toLong())
                     } else {
                         handleErrorResponse(tag, gson.toJson(response.body()), PEConstants.VIEW_COUNT_TRACKING_FAILED)
-                        Log.d(className, "Notification View API Failure")
+                        PELogger.debug("Notification View API Failure")
                     }
                 }
             }
 
-            override fun onFailure(call: Call<GenricResponse>, t: Throwable) {
+            override fun onFailure(call: Call<NetworkResponse>, t: Throwable) {
                 if (!isRetry) {
                     Timer().schedule(object : TimerTask() {
                         override fun run() {
@@ -161,7 +161,7 @@ internal class PEServiceHandler(private val context: Context,
                     }, PEConstants.RETRY_DELAY.toLong())
                 } else {
                     handleErrorResponse(tag, t.message, PEConstants.VIEW_COUNT_TRACKING_FAILED)
-                    Log.d(className, "API Failure")
+                    PELogger.debug("Notification View API Failure")
                 }
             }
         })
@@ -210,7 +210,7 @@ internal class PEServiceHandler(private val context: Context,
                 }
                 sendNotification(payloadPOJO, true)
             } catch (e: Exception) {
-                Log.d(className, "handleSuccessfulResponse: "+ e.localizedMessage)
+                PELogger.error("Notification View API Failure", e)
             }
         }
     }
@@ -237,19 +237,18 @@ internal class PEServiceHandler(private val context: Context,
 
     override fun updateSubscriberStatus(updateSubscriberStatusRequest: UpdateSubscriberStatusRequest) {
         updateSubscriberStatusRequest.deviceTokenHash = pePrefs.hash
-        //TODO: Backend url used instead of CDN one as it was giving wrong response
         val updateSubscriberStatusResponseCall = RestClient.getBackendClient(context.applicationContext).updateSubscriberStatus(updateSubscriberStatusRequest)
-        updateSubscriberStatusResponseCall.enqueue(object : Callback<GenricResponse?> {
-            override fun onResponse(call: Call<GenricResponse?>, response: Response<GenricResponse?>) {
+        updateSubscriberStatusResponseCall.enqueue(object : Callback<NetworkResponse?> {
+            override fun onResponse(call: Call<NetworkResponse?>, response: Response<NetworkResponse?>) {
                 if(response.isSuccessful) {
                     pePrefs.setIsNotificationDisabled(updateSubscriberStatusRequest.isUnSubscribed)
                 } else {
-                    Log.d(className, "updateSubscriberStatus API Failure")
+                    PELogger.debug("Update Subscriber Status API Failure")
                 }
             }
 
-            override fun onFailure(call: Call<GenricResponse?>, t: Throwable) {
-                Log.d(className, "updateSubscriberStatus API Failure")
+            override fun onFailure(call: Call<NetworkResponse?>, t: Throwable) {
+                PELogger.debug("Update Subscriber Status API Failure")
             }
         })
     }

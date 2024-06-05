@@ -40,11 +40,8 @@ public class PEUtilities {
     }
 
     public static String getTimeZone() {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"),
-                Locale.getDefault());
-        Date currentLocalTime = calendar.getTime();
-        DateFormat date = new SimpleDateFormat("ZZZZZ", Locale.getDefault());
-        return date.format(currentLocalTime);
+        String identifier = TimeZone.getDefault().getID();
+        return identifier;
     }
 
     public static Integer generateRandomInt() {
@@ -94,15 +91,15 @@ public class PEUtilities {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.code() < 400) {
-                    Log.d(TAG, "Error Logged");
+                    PELogger.debug("Error Logged successfully: " + log.getName());
                 } else {
-                    Log.d(TAG, "API Failure");
+                    PELogger.debug("Failed to log the error: " + log.getName());
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
-                Log.d(TAG, "API Failure");
+                PELogger.debug("Failed to log the error: " + log.getName());
             }
         });
     }
@@ -117,7 +114,7 @@ public class PEUtilities {
         if (!prefs.getSiteStatus().equalsIgnoreCase(PEConstants.ACTIVE)) {
             return PEConstants.SITE_NOT_ACTIVE;
         }
-        // don't call any API's for deleted subscribers until permission changes
+        // don't call any APIs for deleted subscribers until permission changes
         // to allow
         // both permission and subscriberDeleted checked to catch scenario of sdk
         // race error, where permission is allowed but subscriber is marked deleted

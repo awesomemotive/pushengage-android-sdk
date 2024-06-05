@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.pushengage.PushNotificationDemo.TriggerCampaign.TriggerCampaignActivity;
 import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback;
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.model.request.AddDynamicSegmentRequest;
@@ -40,10 +41,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnTrigger, btnPayload, btnSubscriberDetails, btnGetAttributes,
+    private Button btnTriggerCampaign, btnSubscriberDetails, btnGetAttributes,
             btnAddAttributes, btnSetAttributes, btnRemoveAttributes, btnAddProfileId, btnAddSegment,
-            btnRemoveSegment, btnAddDynamicSegment,
-            btnUpdateTriggerStatus, btnUpdateSubscriberStatus;
+            btnRemoveSegment, btnAddDynamicSegment, buttonSendGoal;
     private TextView tvDeviceToken, tvDeviceHash;
     private Gson gson = new Gson();
     private ProgressBar progressBar;
@@ -58,10 +58,9 @@ public class MainActivity extends AppCompatActivity {
             requestNotificationPermissionIfNeeded();
         }
 
-        btnTrigger = findViewById(R.id.btn_trigger);
+        btnTriggerCampaign = findViewById(R.id.btn_trigger);
         tvDeviceToken = findViewById(R.id.tv_device_token);
         tvDeviceHash = findViewById(R.id.tv_device_hash);
-        btnPayload = findViewById(R.id.btn_payload);
         btnSubscriberDetails = findViewById(R.id.btn_hash_details);
         btnGetAttributes = findViewById(R.id.btn_get_attributes);
         btnAddAttributes = findViewById(R.id.btn_add_attributes);
@@ -71,8 +70,7 @@ public class MainActivity extends AppCompatActivity {
         btnAddSegment = findViewById(R.id.btn_add_segment);
         btnRemoveSegment = findViewById(R.id.btn_remove_segment);
         btnAddDynamicSegment = findViewById(R.id.btn_add_dynamic_segment);
-        btnUpdateTriggerStatus = findViewById(R.id.btn_update_trigger_status);
-        btnUpdateSubscriberStatus = findViewById(R.id.btn_update_subscriber_status);
+        buttonSendGoal = findViewById(R.id.btn_send_goal);
         progressBar = findViewById(R.id.progress_bar);
 
 //        PushEngage.setSmallIconResource("pe_icon");
@@ -89,23 +87,16 @@ public class MainActivity extends AppCompatActivity {
             tvDeviceHash.setText(PushEngage.getDeviceTokenHash());
         }
 
-        btnUpdateSubscriberStatus.setVisibility(View.INVISIBLE);
-        btnTrigger.setVisibility(View.GONE);
-        btnUpdateTriggerStatus.setVisibility(View.GONE);
-        btnPayload.setVisibility(View.GONE);
-
-        btnTrigger.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, TriggerActivity.class);
-                startActivity(intent);
-            }
+        buttonSendGoal.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, GoalActivity.class);
+            startActivity(intent);
         });
 
-        btnPayload.setOnClickListener(new View.OnClickListener() {
+        btnTriggerCampaign.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                showResponse(getString(R.string.payload), PushEngage.getLastNotificationPayload());
+                Intent intent = new Intent(MainActivity.this, TriggerCampaignActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -207,7 +198,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    
+
+
     public void showResponse(String title, String response) {
         hideProgressDialog();
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);

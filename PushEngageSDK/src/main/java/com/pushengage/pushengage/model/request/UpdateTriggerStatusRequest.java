@@ -13,7 +13,7 @@ public class UpdateTriggerStatusRequest {
     private String deviceTokenHash;
     @SerializedName("triggerStatus")
     @Expose
-    private long triggerStatus;
+    private int triggerStatus;
 
     /**
      * No args constructor for use in serialization
@@ -26,7 +26,7 @@ public class UpdateTriggerStatusRequest {
      * @param siteId
      * @param deviceTokenHash
      */
-    public UpdateTriggerStatusRequest(Long siteId, String deviceTokenHash, long triggerStatus) {
+    public UpdateTriggerStatusRequest(Long siteId, String deviceTokenHash, int triggerStatus) {
         super();
         this.siteId = siteId;
         this.deviceTokenHash = deviceTokenHash;
@@ -53,7 +53,7 @@ public class UpdateTriggerStatusRequest {
         return triggerStatus;
     }
 
-    public void setTriggerStatus(long triggerStatus) {
+    public void setTriggerStatus(int triggerStatus) {
         this.triggerStatus = triggerStatus;
     }
 

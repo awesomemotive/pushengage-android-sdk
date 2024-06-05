@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
@@ -18,7 +17,7 @@ import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.UpdateSubscriberRequest;
 import com.pushengage.pushengage.model.response.AndroidSyncResponse;
-import com.pushengage.pushengage.model.response.GenricResponse;
+import com.pushengage.pushengage.model.response.NetworkResponse;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -38,15 +37,9 @@ public class WeeklySyncDataWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-//        Log.i(TAG, "Syncing Data with Server");
         try {
             callAndroidSync();
         } catch (Throwable e) {
-//            e.printStackTrace();
-            // Technically WorkManager will return Result.failure()
-            // but it's best to be explicit about it.
-            // Thus if there were errors, we're return FAILURE
-//            Log.d(TAG, "Error fetching data", e);
             return Result.failure();
         }
         return Result.success();
@@ -56,7 +49,6 @@ public class WeeklySyncDataWorker extends Worker {
     @Override
     public void onStopped() {
         super.onStopped();
-//        Log.i(TAG, "OnStopped called for this worker");
     }
 
     /**
@@ -65,7 +57,6 @@ public class WeeklySyncDataWorker extends Worker {
     public void callAndroidSync() {
         if (PEUtilities.checkNetworkConnection(getApplicationContext())) {
             prefs = new PEPrefs(getApplicationContext());
-//            Log.d(TAG, " SiteKey = " + prefs.getSiteKey());
             Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(getApplicationContext()).androidSync(prefs.getSiteKey());
             addRecordsResponseCall.enqueue(new Callback<AndroidSyncResponse>() {
                 @Override
@@ -92,7 +83,6 @@ public class WeeklySyncDataWorker extends Worker {
                             callUpdateSubscriberHash();
                         } else {
                             prefs.setIsSubscriberDeleted(true);
-//                            Log.d(TAG, "Site Status = " + androidSyncResponse.getData().getSiteStatus());
                         }
                     } else {
 //                        Log.d(TAG, "API Failure");
@@ -130,19 +120,19 @@ public class WeeklySyncDataWorker extends Worker {
         long longVal = areNotificationsEnabled ? 0 : 1;
         prefs.setIsNotificationDisabled(longVal);
         UpdateSubscriberRequest updateSubscriberRequest = new UpdateSubscriberRequest(prefs.getSiteId(), device, deviceVersion, timeZone, language, screenSize, longVal);
-        Call<GenricResponse> updateSubscriberDetailsResponseCall = RestClient.getBackendClient(getApplicationContext()).updateSubscriberHash(prefs.getHash(), updateSubscriberRequest, PushEngage.getSdkVersion(), String.valueOf(prefs.getEu()), String.valueOf(prefs.isGeoFetch()));
-        updateSubscriberDetailsResponseCall.enqueue(new Callback<GenricResponse>() {
+        Call<NetworkResponse> updateSubscriberDetailsResponseCall = RestClient.getBackendClient(getApplicationContext()).updateSubscriberHash(prefs.getHash(), updateSubscriberRequest, PushEngage.getSdkVersion(), String.valueOf(prefs.getEu()), String.valueOf(prefs.isGeoFetch()));
+        updateSubscriberDetailsResponseCall.enqueue(new Callback<NetworkResponse>() {
             @Override
-            public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+            public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                 if (response.isSuccessful()) {
-                    GenricResponse genricResponse = response.body();
+                    NetworkResponse networkResponse = response.body();
                 } else {
 //                    Log.d(TAG, "API Failure");
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
 //                Log.d(TAG, "API Failure");
             }
         });

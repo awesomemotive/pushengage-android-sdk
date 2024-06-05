@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,17 +27,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
                 android:text="-"
                 android:visibility="gone"
                 android:textIsSelectable="true"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="@string/device_hash"
-                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
 
@@ -45,104 +48,121 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
                 android:text="-"
-                android:textIsSelectable="true"
-                android:textSize="12sp" />
-
-
-            <Button
-                android:id="@+id/btn_trigger"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:text="@string/trigger" />
-
-            <Button
-                android:id="@+id/btn_payload"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:text="@string/view_notification_latest_payload" />
+                app:backgroundTint="@color/blue"
+                android:textSize="14sp" />
 
             <Button
                 android:id="@+id/btn_hash_details"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/get_subscriber_details" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_subscriber_details"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_get_attributes"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/get_attributes" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_attributes"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_add_attributes"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/add_attributes" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/add_attributes"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_set_attributes"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/set_attributes" />
-
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/set_attributes"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_remove_attributes"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/delete_attributes" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/delete_attributes"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_add_profile_id"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/add_profile_id" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/add_profile_id"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_add_segment"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/add_segment" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/add_segment"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_remove_segment"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/delete_segment" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/delete_segment"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
                 android:id="@+id/btn_add_dynamic_segment"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/add_dynamic_segments" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/add_dynamic_segments"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
-                android:id="@+id/btn_update_trigger_status"
-                android:layout_width="wrap_content"
+                android:id="@+id/btn_send_goal"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/update_trigger_status" />
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/sendGoal"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
             <Button
-                android:id="@+id/btn_update_subscriber_status"
-                android:layout_width="wrap_content"
+                android:id="@+id/btn_trigger"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/update_subscriber_status" />
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="40dp"
+                android:text="@string/trigger"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
 
 
         </LinearLayout>

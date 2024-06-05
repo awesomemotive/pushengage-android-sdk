@@ -11,7 +11,7 @@ import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.RestClient.RestClient;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.model.request.UpdateSubscriberStatusRequest;
-import com.pushengage.pushengage.model.response.GenricResponse;
+import com.pushengage.pushengage.model.response.NetworkResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,7 +28,6 @@ public class DailySyncDataWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-//        Log.i(TAG, "Syncing Data with Server");
         prefs = new PEPrefs(getApplicationContext());
         try {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
@@ -44,11 +43,6 @@ public class DailySyncDataWorker extends Worker {
                 }
             }
         } catch (Throwable e) {
-//            e.printStackTrace();
-            // Technically WorkManager will return Result.failure()
-            // but it's best to be explicit about it.
-            // Thus if there were errors, we're return FAILURE
-//            Log.d(TAG, "Error fetching data", e);
             return Result.failure();
         }
         return Result.success();
@@ -58,7 +52,6 @@ public class DailySyncDataWorker extends Worker {
     @Override
     public void onStopped() {
         super.onStopped();
-//        Log.i(TAG, "OnStopped called for this worker");
     }
 
     /**
@@ -68,12 +61,12 @@ public class DailySyncDataWorker extends Worker {
      */
     public void updateSubscriberStatus(UpdateSubscriberStatusRequest updateSubscriberStatusRequest) {
         updateSubscriberStatusRequest.setDeviceTokenHash(prefs.getHash());
-        Call<GenricResponse> updateSubscriberStatusResponseCall = RestClient.getBackendClient(getApplicationContext()).updateSubscriberStatus(updateSubscriberStatusRequest);
-        updateSubscriberStatusResponseCall.enqueue(new Callback<GenricResponse>() {
+        Call<NetworkResponse> updateSubscriberStatusResponseCall = RestClient.getBackendClient(getApplicationContext()).updateSubscriberStatus(updateSubscriberStatusRequest);
+        updateSubscriberStatusResponseCall.enqueue(new Callback<NetworkResponse>() {
             @Override
-            public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+            public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                 if (response.isSuccessful()) {
-                    GenricResponse genricResponse = response.body();
+                    NetworkResponse networkResponse = response.body();
                     prefs.setIsNotificationDisabled(updateSubscriberStatusRequest.getIsUnSubscribed());
                 } else {
 //                    Log.d(TAG, "API Failure");
@@ -81,7 +74,7 @@ public class DailySyncDataWorker extends Worker {
             }
 
             @Override
-            public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
 //                Log.d(TAG, "API Failure");
             }
         });

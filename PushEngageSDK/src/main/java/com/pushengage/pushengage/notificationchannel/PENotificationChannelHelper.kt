@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat
 import com.pushengage.pushengage.Database.ChannelEntity
 import com.pushengage.pushengage.Database.DaoInterface
 import com.pushengage.pushengage.helper.PEConstants
+import com.pushengage.pushengage.helper.PELogger
 import com.pushengage.pushengage.model.PEChannelImportance
 import com.pushengage.pushengage.model.PENotificationVisibility
 import com.pushengage.pushengage.model.payload.FCMPayloadModel
@@ -123,7 +124,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 notificationBuilder.setLights(Color.parseColor("#" + channelEntity.ledColorCode), 1000, 1000)
             }
         } catch (e: Exception) {
-            Log.d(className, "setChannelLedColorForNotificationBuilder: "+ e.localizedMessage)
+            PELogger.error("Set notification LED color", e)
         }
     }
 
@@ -192,7 +193,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 notificationBuilder.setVibrate(array)
             }
         } catch (e: Exception) {
-            Log.d(className, "setNotificationVibration: "+e.localizedMessage)
+            PELogger.error("Set notification vibration", e)
         }
     }
 
@@ -213,7 +214,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 notificationBuilder.setSound(soundUri)
             }
         } catch (e: Exception) {
-            Log.d(className, "setNotificationSound: "+e.localizedMessage)
+            PELogger.error("Set notification sound", e)
         }
     }
 
@@ -245,7 +246,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 channel.setSound(soundUri, audioAttributes)
             }
         } catch (e: Exception) {
-            Log.d(className, "setChannelSound: ${e.localizedMessage}")
+            PELogger.error("Set Notification Sound for Channel", e)
         }
         return channel
     }
@@ -274,7 +275,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 channel.vibrationPattern = array
             }
         } catch (e: Exception) {
-            Log.d(className, "setChannelVibration: "+ e.localizedMessage)
+            PELogger.error("Set Channel Vibration", e)
         }
         return channel
     }
@@ -299,7 +300,7 @@ internal class PENotificationChannelHelper(private val context: Context,
                 channel.lightColor = Color.parseColor("#$colorCode")
             }
         } catch (e: Exception) {
-            Log.d(className, "setChannelLedColor: "+ e.localizedMessage)
+            PELogger.error("Set LED Color for Channel", e)
         }
         return channel
     }

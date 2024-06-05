@@ -21,7 +21,7 @@ import com.pushengage.pushengage.helper.PEConstants;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.ErrorLogRequest;
-import com.pushengage.pushengage.model.response.GenricResponse;
+import com.pushengage.pushengage.model.response.NetworkResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +65,6 @@ public class NotificationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "Service onCreate Called");
     }
 
     @Override
@@ -93,12 +92,12 @@ public class NotificationService extends Service {
                 device = PEConstants.MOBILE;
             }
 
-            Call<GenricResponse> notificationClickResponseCall = RestClient.getAnalyticsClient(context, headerMap).notificationClick(deviceHash, tag, action, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
-            notificationClickResponseCall.enqueue(new Callback<GenricResponse>() {
+            Call<NetworkResponse> notificationClickResponseCall = RestClient.getAnalyticsClient(context, headerMap).notificationClick(deviceHash, tag, action, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
+            notificationClickResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<GenricResponse> call, @NonNull Response<GenricResponse> response) {
+                public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
                     if (response.isSuccessful()) {
-                        GenricResponse genricResponse = response.body();
+                        NetworkResponse networkResponse = response.body();
                         stopSelf();
                     } else {
                         if (!isRetry) {
@@ -123,7 +122,7 @@ public class NotificationService extends Service {
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<GenricResponse> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<NetworkResponse> call, @NonNull Throwable t) {
                     if (!isRetry) {
                         new Timer().schedule(new TimerTask() {
                             @Override

@@ -18,5 +18,7 @@ public class PEApplication extends Application {
                 .addContext(getApplicationContext())
                 .setAppId("3ca8257d-1f40-41e0-88bc-ea28dc6495ef")
                 .build();
+
+        PushEngage.enableLogging(true);
     }
 }
