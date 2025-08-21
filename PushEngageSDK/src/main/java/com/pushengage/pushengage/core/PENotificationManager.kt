@@ -97,9 +97,9 @@ internal class PENotificationManager constructor(private val context: Context,
      */
     private fun handleNotificationSubscriberChange(areNotificationsEnabled: Boolean,
                                                    enabledLongValue: Long) {
-        if (areNotificationsEnabled && prefs.isSubscriberDeleted) {
+        if (areNotificationsEnabled && prefs.isSubscriberDeleted && !prefs.isManuallyUnsubscribed) {
             PushEngage.callAddSubscriberAPI()
-        } else {
+        } else if (!prefs.isManuallyUnsubscribed) {
             val updateSubscriberStatusRequest = UpdateSubscriberStatusRequest(
                     prefs.siteId,
                     prefs.hash,

@@ -159,9 +159,89 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="40dp"
                 android:text="@string/trigger"
                 app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_request_notification_permission"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/request_notification_permission"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_get_notification_permission_status"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_notification_permission_status"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_get_subscription_status"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_subscription_status"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_get_subscription_notification_status"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_subscription_notification_status"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_subscribe"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/subscribe"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_unsubscribe"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/unsubscribe"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_get_subscriber_id"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:text="@string/get_subscriber_id"
+                app:backgroundTint="@color/blue"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_compose_test"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="40dp"
+                android:text="Test ComponentActivity"
+                app:backgroundTint="@color/green"
                 android:textAllCaps="false" />
 
 

@@ -1,7 +1,7 @@
 package com.pushengage.pushengage.helper;
 
 public class PEConstants {
-    public static final String SDK_VERSION = "0.0.5";
+    public static final String SDK_VERSION = "0.0.6";
 
     public static final String PROD = "PRODUCTION";
     public static final String STG = "STAGING";

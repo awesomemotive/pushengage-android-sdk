@@ -26,6 +26,7 @@ public class PEPrefs {
     private static final String KEY_DELETE_ON_NOTIFICATION_DISABLE = "delete_on_notification_disable";
     private static final String KEY_ARE_NOTIFICATIONS_DISABLED = "is_notifications_disabled";
     private static final String KEY_SUBSCRIBER_DELETED = "subscriberDeleted";
+    private static final String KEY_IS_MANUALLY_UNSUBSCRIBED = "is_manually_unsubscribed";
     private static final String KEY_ACTION_BUTTON_RECEIVER_REGISTERED = "ACTION_BUTTON_RECEIVER_REGISTERED";
     private static final String KEY_SMALL_ICON_RESOURCE = "SMALL_ICON_RESOURCE";
     private static final String KEY_ENVIRONMENT = "ENVIRONMENT";
@@ -64,7 +65,6 @@ public class PEPrefs {
         mPrefsWrite.putString(KEY_PAYLOAD, payload);
         mPrefsWrite.commit();
     }
-
 
     public String getSiteKey() {
         return mPrefsRead.getString(KEY_SITE_KEY, "");
@@ -180,6 +180,15 @@ public class PEPrefs {
 
     public void setIsSubscriberDeleted(Boolean isSubscriberDeleted) {
         mPrefsWrite.putBoolean(KEY_SUBSCRIBER_DELETED, isSubscriberDeleted);
+        mPrefsWrite.commit();
+    }
+
+    public Boolean isManuallyUnsubscribed() {
+        return mPrefsRead.getBoolean(KEY_IS_MANUALLY_UNSUBSCRIBED, false);
+    }
+
+    public void setIsManuallyUnsubscribed(Boolean isManuallyUnsubscribed) {
+        mPrefsWrite.putBoolean(KEY_IS_MANUALLY_UNSUBSCRIBED, isManuallyUnsubscribed);
         mPrefsWrite.commit();
     }
 

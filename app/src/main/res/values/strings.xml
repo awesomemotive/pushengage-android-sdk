@@ -72,5 +72,12 @@
     <string name="variant_id">Variant ID</string>
     <string name="expiry_timestamp">Expiry Timestamp</string>
     <string name="alert_price">Alert Price</string>
+    <string name="request_notification_permission">Request Notification Permission</string>
+    <string name="get_notification_permission_status">Get Notification Permission Status</string>
+    <string name="get_subscription_status">Get Subscription Status</string>
+    <string name="get_subscription_notification_status">Get Subscription Notification Status</string>
+    <string name="subscribe">Subscribe</string>
+    <string name="unsubscribe">Unsubscribe</string>
+    <string name="get_subscriber_id">Get Subscriber ID</string>
 
 </resources>

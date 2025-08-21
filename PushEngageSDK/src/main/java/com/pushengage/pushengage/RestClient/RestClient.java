@@ -373,13 +373,15 @@ public class RestClient {
 
     public interface RTApiInterface {
         @POST("subscriber/add")
-        Call<AddSubscriberResponse> addSubscriber(@Body AddSubscriberRequest addSubscriberRequest, @Query("swv") String swv, @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
+        Call<AddSubscriberResponse> addSubscriber(@Body AddSubscriberRequest addSubscriberRequest,
+                @Query("swv") String swv, @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
 
         @PUT()
         Call<RecordsResponse> records(@Body RecordsRequest recordsRequest);
 
         @POST("subscriber/updatetriggerstatus")
-        Call<NetworkResponse> automatedNotification(@Body UpdateTriggerStatusRequest updateTriggerStatusRequest, @Query("swv") String swv, @Query("bv") String bv);
+        Call<NetworkResponse> automatedNotification(@Body UpdateTriggerStatusRequest updateTriggerStatusRequest,
+                @Query("swv") String swv, @Query("bv") String bv);
 
         @POST("goals")
         Call<NetworkResponse> sendGoal(@Body GoalRequest goalRequest, @Query("swv") String swv, @Query("bv") String bv);
@@ -388,22 +390,29 @@ public class RestClient {
         Call<TriggerCampaignResponse> sendTriggerEvent(@Body TriggerCampaignRequestModel triggerCampaignRequestModel);
 
         @POST("alerts")
-        Call<NetworkResponse> addAlert(@Body Map<String, Object> requestBody, @Query("swv") String swv, @Query("bv") String bv);
+        Call<NetworkResponse> addAlert(@Body Map<String, Object> requestBody, @Query("swv") String swv,
+                @Query("bv") String bv);
 
         @POST("notification/fetch")
         Call<FetchResponse> fetch(@Body FetchRequest fetchRequest);
 
         @GET("notification/click")
-        Call<NetworkResponse> notificationClick(@Query("device_token_hash") String device_hash, @Query("tag") String tag, @Query("action") String action, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
+        Call<NetworkResponse> notificationClick(@Query("device_token_hash") String device_hash,
+                @Query("tag") String tag, @Query("action") String action, @Query("device_type") String device_type,
+                @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
 
         @GET("notification/view")
-        Call<NetworkResponse> notificationView(@Query("device_token_hash") String device_token_hash, @Query("tag") String tag, @Query("device_type") String device_type, @Query("device") String device, @Query("swv") String swv, @Query("timezone") String timezone);
+        Call<NetworkResponse> notificationView(@Query("device_token_hash") String device_token_hash,
+                @Query("tag") String tag, @Query("device_type") String device_type, @Query("device") String device,
+                @Query("swv") String swv, @Query("timezone") String timezone);
 
         @PUT("subscriber/{id}")
-        Call<NetworkResponse> updateSubscriberHash(@Path("id") String id, @Body UpdateSubscriberRequest updateSubscriberRequest, @Query("swv") String swv, @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
+        Call<NetworkResponse> updateSubscriberHash(@Path("id") String id,
+                @Body UpdateSubscriberRequest updateSubscriberRequest, @Query("swv") String swv,
+                @Query("is_eu") String is_eu, @Query("geo_fetch") String geo_fetch);
 
         @GET("subscriber/{id}")
-        Call<NetworkResponse> subscriberDetails(@Path("id") String id, @Query("fields") List<String> fields);
+        Call<NetworkResponse> subscriberDetails(@Path("id") String id, @Query("fields") String fields);
 
         @GET("subscriber/{id}/attributes")
         Call<NetworkResponse> getSubscriberAttributes(@Path("id") String id);

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.pushengage.pushengage">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,6 +16,16 @@
             android:noHistory="true"
             android:excludeFromRecents="true"
             android:exported="false" />
+
+        <activity
+            android:name=".permissionhandling.PEPermissionHelperActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:exported="false" />
+
+
+
 
         <service
             android:name=".core.PEFirebaseMessagingService"

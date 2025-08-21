@@ -57,10 +57,12 @@ public class WeeklySyncDataWorker extends Worker {
     public void callAndroidSync() {
         if (PEUtilities.checkNetworkConnection(getApplicationContext())) {
             prefs = new PEPrefs(getApplicationContext());
-            Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(getApplicationContext()).androidSync(prefs.getSiteKey());
+            Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(getApplicationContext())
+                    .androidSync(prefs.getSiteKey());
             addRecordsResponseCall.enqueue(new Callback<AndroidSyncResponse>() {
                 @Override
-                public void onResponse(@NonNull Call<AndroidSyncResponse> call, @NonNull Response<AndroidSyncResponse> response) {
+                public void onResponse(@NonNull Call<AndroidSyncResponse> call,
+                        @NonNull Response<AndroidSyncResponse> response) {
                     if (response.isSuccessful()) {
                         AndroidSyncResponse androidSyncResponse = response.body();
                         if (androidSyncResponse.getData().getSiteStatus().equalsIgnoreCase(PEConstants.ACTIVE)) {
@@ -72,26 +74,30 @@ public class WeeklySyncDataWorker extends Worker {
                             prefs.setLoggerUrl(androidSyncResponse.getData().getApi().getLog());
                             prefs.setSiteId(androidSyncResponse.getData().getSiteId());
                             prefs.setProjectId(androidSyncResponse.getData().getFirebaseSenderId());
-                            prefs.setDeleteOnNotificationDisable(androidSyncResponse.getData().getDeleteOnNotificationDisable());
+                            prefs.setDeleteOnNotificationDisable(
+                                    androidSyncResponse.getData().getDeleteOnNotificationDisable());
                             prefs.setSiteStatus(androidSyncResponse.getData().getSiteStatus());
                             prefs.setGeoFetch(androidSyncResponse.getData().getGeoLocationEnabled());
                             prefs.setEu(androidSyncResponse.getData().getIsEu());
-                            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+                            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat
+                                    .from(getApplicationContext());
                             boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();
                             long longVal = areNotificationsEnabled ? 0 : 1;
                             prefs.setIsNotificationDisabled(longVal);
-                            callUpdateSubscriberHash();
+                            if (!prefs.isManuallyUnsubscribed()) {
+                                callUpdateSubscriberHash();
+                            }
                         } else {
                             prefs.setIsSubscriberDeleted(true);
                         }
                     } else {
-//                        Log.d(TAG, "API Failure");
+                        // Log.d(TAG, "API Failure");
                     }
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<AndroidSyncResponse> call, @NonNull Throwable t) {
-//                    Log.d(TAG, "API Failure");
+                    // Log.d(TAG, "API Failure");
                 }
             });
         }

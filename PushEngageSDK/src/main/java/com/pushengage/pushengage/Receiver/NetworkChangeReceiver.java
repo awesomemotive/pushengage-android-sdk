@@ -44,7 +44,9 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
             if (isOnline(context)) {
                 PELogger.debug("NetworkChangeReceiver: Device online");
                 PEPrefs prefs = new PEPrefs(context);
-                if (TextUtils.isEmpty(prefs.getHash())) {
+                if (TextUtils.isEmpty(prefs.getHash()) &&
+                        "granted".equals(PushEngage.getNotificationPermissionStatus()) &&
+                        !prefs.isManuallyUnsubscribed()) {
                     PushEngage.subscribe();
                 }
                 getDataFromDB(context);
@@ -55,7 +57,6 @@ public class NetworkChangeReceiver extends BroadcastReceiver implements Lifecycl
             PELogger.error("NetworkChangeReceiver", e);
         }
     }
-
 
     private void getDataFromDB(Context context) {
         peRoomDatabase = PERoomDatabase.getDatabase(context);
