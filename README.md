@@ -79,43 +79,57 @@ Follow the instructions as mentioned in the [PushEngage Android Public APIs Docu
  - SDK supports from Android 4.1 and above.
 
 ### Android 13 notification permission
- - Handle runtime notification permission:
-   In your desired activity check for notification permission.
-   This code can also be found in the MainActivity of the sample project.
-   ``` java
-       @Override
-       protected void onCreate(Bundle savedInstanceState) {
-           super.onCreate(savedInstanceState);
-           setContentView(R.layout.activity_main);
 
-           //For Android 13 and above, check for notification permission
-           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-               requestNotificationPermissionIfNeeded();
-           }
-       }
-      
-       @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-       private void requestNotificationPermissionIfNeeded() {
-           int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
-           // If the permission is not granted, request it.
-           if (permissionState == PackageManager.PERMISSION_DENIED) {
-               ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 100);
-           }
-       }
+The PushEngage SDK provides an easy-to-use method for requesting notification permissions. The SDK automatically handles the permission request for Android 13+ and calls `PushEngage.subscribe()` when permission is granted.
 
-       @Override
-       public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-           super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-           if(requestCode == 100) {
-               // Check if the user granted the permission.
-               if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                   PushEngage.subscribe();
-               } else {
-                   Log.d("MainActivity", "onRequestPermissionsResult: Permission denied");
-               }
-           }
-       }
-   ```
+#### Recommended Approach (Using SDK Method)
+Use the built-in SDK method to request notification permission. This approach is demonstrated in the sample app:
+
+```java
+/**
+ * Request notification permission using the PushEngage SDK
+ * SDK automatically calls subscribe when permission is granted
+ */
+private void requestNotificationPermissionUsingSDK() {
+    PushEngage.requestNotificationPermission(this, new PushEngagePermissionCallback() {
+        @Override
+        public void onPermissionResult(boolean granted, Error error) {
+            if (granted) {
+                // Permission granted - SDK automatically calls subscribe
+                Log.d("MainActivity", "Notification permission granted");
+                Toast.makeText(MainActivity.this, "Permission granted and subscribed!", Toast.LENGTH_SHORT).show();
+            } else {
+                // Permission denied, handle accordingly
+                Log.d("MainActivity", "Notification permission denied");
+                Toast.makeText(MainActivity.this, "Permission denied!", Toast.LENGTH_SHORT).show();
+                if (error != null) {
+                    Log.e("MainActivity", "Permission error: " + error.getMessage());
+                }
+            }
+        }
+    });
+}
+```
+
+#### Check Permission Status
+You can also check the current notification permission status:
+
+```java
+String permissionStatus = PushEngage.getNotificationPermissionStatus();
+switch (permissionStatus) {
+    case "granted":
+        Log.d("Permission", "Notifications are allowed");
+        break;
+    case "denied":
+        Log.d("Permission", "Notifications are denied");
+        break;
+    default:
+        Log.d("Permission", "Unknown permission status");
+        break;
+}
+```
+
+**Note:** The SDK handles all the complexity of permission requests across different Android versions and automatically subscribes the user when permission is granted, making manual permission handling unnecessary.
 
 ### Support
 

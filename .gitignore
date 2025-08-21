@@ -141,3 +141,7 @@ fabric.properties
 ### AndroidStudio Patch ###
 
 !/gradle/wrapper/gradle-wrapper.jar
+
+### Cursor Rules ###
+.cursor/
+*.mdc

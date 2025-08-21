@@ -1,3 +1,4 @@
 <resources>
     <string name="server_error">Server Error</string>
+    <string name="permission_not_granted">Notification Permission is not Granted.</string>
 </resources>

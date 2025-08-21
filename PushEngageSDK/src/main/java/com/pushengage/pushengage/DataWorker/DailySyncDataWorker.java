@@ -30,15 +30,17 @@ public class DailySyncDataWorker extends Worker {
     public Result doWork() {
         prefs = new PEPrefs(getApplicationContext());
         try {
-            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getApplicationContext());
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat
+                    .from(getApplicationContext());
             boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();
 
             long longVal = areNotificationsEnabled ? 0 : 1;
             if (!(longVal == prefs.isNotificationDisabled())) {
-                if (areNotificationsEnabled && prefs.isSubscriberDeleted()) {
+                if (areNotificationsEnabled && prefs.isSubscriberDeleted() && !prefs.isManuallyUnsubscribed()) {
                     PushEngage.callAddSubscriberAPI();
-                } else {
-                    UpdateSubscriberStatusRequest updateSubscriberStatusRequest = new UpdateSubscriberStatusRequest(prefs.getSiteId(), prefs.getHash(), longVal, prefs.getDeleteOnNotificationDisable());
+                } else if (!prefs.isManuallyUnsubscribed()) {
+                    UpdateSubscriberStatusRequest updateSubscriberStatusRequest = new UpdateSubscriberStatusRequest(
+                            prefs.getSiteId(), prefs.getHash(), longVal, prefs.getDeleteOnNotificationDisable());
                     updateSubscriberStatus(updateSubscriberStatusRequest);
                 }
             }

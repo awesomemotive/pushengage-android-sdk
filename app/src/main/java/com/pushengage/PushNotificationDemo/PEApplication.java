@@ -15,7 +15,7 @@ public class PEApplication extends Application {
 
         PushEngage pushEngage = new PushEngage.Builder()
                 .addContext(getApplicationContext())
-                .setAppId("YOUR_APP_ID")
+                .setAppId("your_app_id")
                 .build();
 
         PushEngage.enableLogging(true);

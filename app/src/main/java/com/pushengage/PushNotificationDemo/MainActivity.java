@@ -1,15 +1,11 @@
 package com.pushengage.PushNotificationDemo;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,6 +25,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.pushengage.PushNotificationDemo.TriggerCampaign.TriggerCampaignActivity;
 import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback;
+import com.pushengage.pushengage.Callbacks.PushEngagePermissionCallback;
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.model.request.AddDynamicSegmentRequest;
 
@@ -43,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Button btnTriggerCampaign, btnSubscriberDetails, btnGetAttributes,
             btnAddAttributes, btnSetAttributes, btnRemoveAttributes, btnAddProfileId, btnAddSegment,
-            btnRemoveSegment, btnAddDynamicSegment, buttonSendGoal;
+            btnRemoveSegment, btnAddDynamicSegment, buttonSendGoal, btnRequestNotificationPermission, btnComposeTest,
+            btnGetNotificationPermissionStatus, btnGetSubscriptionStatus, btnGetSubscriptionNotificationStatus,
+            btnSubscribe, btnUnsubscribe, btnGetSubscriberId;
     private TextView tvDeviceToken, tvDeviceHash;
     private Gson gson = new Gson();
     private ProgressBar progressBar;
@@ -52,11 +51,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //For Android 13 and above, check for notification permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestNotificationPermissionIfNeeded();
-        }
 
         btnTriggerCampaign = findViewById(R.id.btn_trigger);
         tvDeviceToken = findViewById(R.id.tv_device_token);
@@ -71,9 +65,17 @@ public class MainActivity extends AppCompatActivity {
         btnRemoveSegment = findViewById(R.id.btn_remove_segment);
         btnAddDynamicSegment = findViewById(R.id.btn_add_dynamic_segment);
         buttonSendGoal = findViewById(R.id.btn_send_goal);
+        btnRequestNotificationPermission = findViewById(R.id.btn_request_notification_permission);
+        btnGetNotificationPermissionStatus = findViewById(R.id.btn_get_notification_permission_status);
+        btnGetSubscriptionStatus = findViewById(R.id.btn_get_subscription_status);
+        btnGetSubscriptionNotificationStatus = findViewById(R.id.btn_get_subscription_notification_status);
+        btnSubscribe = findViewById(R.id.btn_subscribe);
+        btnUnsubscribe = findViewById(R.id.btn_unsubscribe);
+        btnGetSubscriberId = findViewById(R.id.btn_get_subscriber_id);
+        btnComposeTest = findViewById(R.id.btn_compose_test);
         progressBar = findViewById(R.id.progress_bar);
 
-//        PushEngage.setSmallIconResource("pe_icon");
+        // PushEngage.setSmallIconResource("pe_icon");
 
         if (TextUtils.isEmpty(PushEngage.getDeviceTokenHash())) {
             final Handler handler = new Handler(Looper.getMainLooper());
@@ -103,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         btnSubscriberDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.subscriber_details), getString(R.string.subscriber_details_request), Constants.SUBSCRIBER_DETAILS);
+                getRequestFromUser(getString(R.string.subscriber_details),
+                        getString(R.string.subscriber_details_request), Constants.SUBSCRIBER_DETAILS);
             }
         });
 
@@ -129,76 +132,213 @@ public class MainActivity extends AppCompatActivity {
         btnAddAttributes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.add_attributes), getString(R.string.set_attributes_request), Constants.ADD_ATTRIBUTES);
+                getRequestFromUser(getString(R.string.add_attributes), getString(R.string.set_attributes_request),
+                        Constants.ADD_ATTRIBUTES);
             }
         });
 
         btnSetAttributes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.set_attributes), getString(R.string.set_attributes_request), Constants.SET_ATTRIBUTES);
+                getRequestFromUser(getString(R.string.set_attributes), getString(R.string.set_attributes_request),
+                        Constants.SET_ATTRIBUTES);
             }
         });
 
         btnRemoveAttributes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.delete_attributes), getString(R.string.delete_attributes_request), Constants.REMOVE_ATTRIBUTES);
+                getRequestFromUser(getString(R.string.delete_attributes), getString(R.string.delete_attributes_request),
+                        Constants.REMOVE_ATTRIBUTES);
             }
         });
 
         btnAddProfileId.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.add_profile_id), getString(R.string.enter_profile_id), Constants.ADD_PROFILE_ID);
+                getRequestFromUser(getString(R.string.add_profile_id), getString(R.string.enter_profile_id),
+                        Constants.ADD_PROFILE_ID);
             }
         });
 
         btnAddSegment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.add_segment), getString(R.string.add_segment_request), Constants.ADD_SEGMENT);
+                getRequestFromUser(getString(R.string.add_segment), getString(R.string.add_segment_request),
+                        Constants.ADD_SEGMENT);
             }
         });
 
         btnRemoveSegment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.delete_segment), getString(R.string.delete_segment_request), Constants.DELETE_SEGMENT);
+                getRequestFromUser(getString(R.string.delete_segment), getString(R.string.delete_segment_request),
+                        Constants.DELETE_SEGMENT);
             }
         });
 
         btnAddDynamicSegment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getRequestFromUser(getString(R.string.add_dynamic_segments), getString(R.string.add_dynamic_segment_request), Constants.ADD_DYNAMIC_SEGMENT);
+                getRequestFromUser(getString(R.string.add_dynamic_segments),
+                        getString(R.string.add_dynamic_segment_request), Constants.ADD_DYNAMIC_SEGMENT);
+            }
+        });
+
+        btnRequestNotificationPermission.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestNotificationPermissionUsingSDK();
+            }
+        });
+
+        btnGetNotificationPermissionStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String status = PushEngage.getNotificationPermissionStatus();
+                showResponse("Notification Permission Status", status);
+            }
+        });
+
+        btnGetSubscriptionStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgressDialog();
+                PushEngage.getSubscriptionStatus(new PushEngageResponseCallback() {
+                    @Override
+                    public void onSuccess(Object responseObject) {
+                        String response = gson.toJson(responseObject);
+                        showResponse("Subscription Status", response);
+                    }
+
+                    @Override
+                    public void onFailure(Integer errorCode, String errorMessage) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        btnGetSubscriptionNotificationStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgressDialog();
+                PushEngage.getSubscriptionNotificationStatus(new PushEngageResponseCallback() {
+                    @Override
+                    public void onSuccess(Object responseObject) {
+                        String response = gson.toJson(responseObject);
+                        showResponse("Subscription Notification Status", response);
+                    }
+
+                    @Override
+                    public void onFailure(Integer errorCode, String errorMessage) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        btnSubscribe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgressDialog();
+                PushEngage.subscribe(MainActivity.this, new PushEngageResponseCallback() {
+                    @Override
+                    public void onSuccess(Object responseObject) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, "Subscribed successfully!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Integer errorCode, String errorMessage) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        btnUnsubscribe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgressDialog();
+                PushEngage.unsubscribe(new PushEngageResponseCallback() {
+                    @Override
+                    public void onSuccess(Object responseObject) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, "Unsubscribed successfully!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Integer errorCode, String errorMessage) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        btnGetSubscriberId.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProgressDialog();
+                PushEngage.getSubscriberId(new PushEngageResponseCallback() {
+                    @Override
+                    public void onSuccess(Object responseObject) {
+                        hideProgressDialog();
+                        String subscriberId = (String) responseObject;
+                        if (subscriberId != null) {
+                            showResponse("Subscriber ID", "Subscriber ID: " + subscriberId);
+                        } else {
+                            showResponse("Subscriber ID", "User is not subscribed");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Integer errorCode, String errorMessage) {
+                        hideProgressDialog();
+                        Toast.makeText(MainActivity.this, "Error getting subscriber ID: " + errorMessage,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+
+        btnComposeTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ComposeTestActivity.class);
+                startActivity(intent);
             }
         });
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    private void requestNotificationPermissionIfNeeded() {
-        int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
-//         If the permission is not granted, request it.
-        if (permissionState == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 100);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 100) {
-            // Check if the user granted the permission.
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                PushEngage.subscribe();
-            } else {
-                Log.d("MainActivity", "onRequestPermissionsResult: Permission denied");
+    /**
+     * Request notification permission using the PushEngage SDK
+     * SDK automatically calls subscribe when permission is granted
+     */
+    private void requestNotificationPermissionUsingSDK() {
+        PushEngage.requestNotificationPermission(this, new PushEngagePermissionCallback() {
+            @Override
+            public void onPermissionResult(boolean granted, Error error) {
+                if (granted) {
+                    // Permission granted - SDK automatically calls subscribe
+                    Log.d("MainActivity", "Notification permission granted");
+                    Toast.makeText(MainActivity.this, "Permission granted and subscribed!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Permission denied, handle accordingly
+                    Log.d("MainActivity", "Notification permission denied");
+                    Toast.makeText(MainActivity.this, "Permission denied!", Toast.LENGTH_SHORT).show();
+                    if (error != null) {
+                        Log.e("MainActivity", "Permission error: " + error.getMessage());
+                    }
+                }
             }
-        }
+        });
     }
-
 
     public void showResponse(String title, String response) {
         hideProgressDialog();
@@ -207,7 +347,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout llBase = new LinearLayout(MainActivity.this);
         TextView tvResponse = new TextView(MainActivity.this);
         alert.setMessage(title);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(30, 10, 30, 10);
         tvResponse.setLayoutParams(params);
         tvResponse.setText(response);
@@ -230,7 +371,8 @@ public class MainActivity extends AppCompatActivity {
         alert.setTitle(title);
         alert.setMessage(message);
         etRequest.setBackgroundResource(R.drawable.edittext_background);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(30, 10, 30, 10);
         params.height = 500;
         etRequest.setPadding(16, 16, 16, 16);
@@ -239,8 +381,10 @@ public class MainActivity extends AppCompatActivity {
         etRequest.setLayoutParams(params);
         switch (request) {
             case Constants.SUBSCRIBER_DETAILS:
-                etRequest.setText(PushEngage.SubscriberFields.City + "," + PushEngage.SubscriberFields.Country + "," + PushEngage.SubscriberFields.State + "," +
-                        PushEngage.SubscriberFields.Device + "," + PushEngage.SubscriberFields.DeviceType + "," + PushEngage.SubscriberFields.ProfileId + "," + PushEngage.SubscriberFields.Segments
+                etRequest.setText(PushEngage.SubscriberFields.City + "," + PushEngage.SubscriberFields.Country + ","
+                        + PushEngage.SubscriberFields.State + "," +
+                        PushEngage.SubscriberFields.Device + "," + PushEngage.SubscriberFields.DeviceType + ","
+                        + PushEngage.SubscriberFields.ProfileId + "," + PushEngage.SubscriberFields.Segments
                         + "," + PushEngage.SubscriberFields.Timezone + "," + PushEngage.SubscriberFields.TsCreated);
                 break;
             case Constants.ADD_DYNAMIC_SEGMENT:
@@ -267,7 +411,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             List<String> subscriberDetailsList = new ArrayList<String>(Arrays.asList(value.split(",")));
                             showProgressDialog();
-                            PushEngage.getSubscriberDetails(new ArrayList<String>(), new PushEngageResponseCallback() {
+                            PushEngage.getSubscriberDetails(subscriberDetailsList, new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
                                     String response = gson.toJson(responseObject);
@@ -283,7 +427,8 @@ public class MainActivity extends AppCompatActivity {
                             });
 
                         } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                         break;
@@ -293,7 +438,8 @@ public class MainActivity extends AppCompatActivity {
                             PushEngage.addSubscriberAttributes(jsonObject, new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.attributes_added), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, getString(R.string.attributes_added),
+                                            Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -302,7 +448,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                         break;
@@ -313,7 +460,8 @@ public class MainActivity extends AppCompatActivity {
                             PushEngage.setSubscriberAttributes(jsonObject, new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.attributes_set), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, getString(R.string.attributes_set),
+                                            Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -322,21 +470,24 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                         break;
 
                     case Constants.REMOVE_ATTRIBUTES:
                         if (TextUtils.isEmpty(value)) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                         } else {
                             try {
                                 List<String> attributeList = new ArrayList<String>(Arrays.asList(value.split(",")));
                                 PushEngage.deleteSubscriberAttributes(attributeList, new PushEngageResponseCallback() {
                                     @Override
                                     public void onSuccess(Object responseObject) {
-                                        Toast.makeText(MainActivity.this, getString(R.string.delete_attributes_success), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, getString(R.string.delete_attributes_success),
+                                                Toast.LENGTH_SHORT).show();
                                     }
 
                                     @Override
@@ -345,21 +496,24 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             } catch (Exception e) {
-                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                        Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
                             }
                         }
                         break;
                     case Constants.ADD_SEGMENT:
                         if (TextUtils.isEmpty(value)) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                         } else {
                             try {
                                 List<String> segmentList = new ArrayList<String>(Arrays.asList(value.split(",")));
                                 PushEngage.addSegment(segmentList, new PushEngageResponseCallback() {
                                     @Override
                                     public void onSuccess(Object responseObject) {
-                                        Toast.makeText(MainActivity.this, getString(R.string.segment_added), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, getString(R.string.segment_added),
+                                                Toast.LENGTH_SHORT).show();
                                     }
 
                                     @Override
@@ -368,21 +522,24 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             } catch (Exception e) {
-                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                        Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
                             }
                         }
                         break;
                     case Constants.DELETE_SEGMENT:
                         if (TextUtils.isEmpty(value)) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                         } else {
                             try {
                                 List<String> segmentList = new ArrayList<String>(Arrays.asList(value.split(",")));
                                 PushEngage.removeSegment(segmentList, new PushEngageResponseCallback() {
                                     @Override
                                     public void onSuccess(Object responseObject) {
-                                        Toast.makeText(MainActivity.this, getString(R.string.delete_segment_success), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, getString(R.string.delete_segment_success),
+                                                Toast.LENGTH_SHORT).show();
                                     }
 
                                     @Override
@@ -391,7 +548,8 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             } catch (Exception e) {
-                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                        Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
                             }
                         }
@@ -410,7 +568,8 @@ public class MainActivity extends AppCompatActivity {
                             PushEngage.addDynamicSegment(segments, new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.dynamic_segment_added), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, getString(R.string.dynamic_segment_added),
+                                            Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -419,7 +578,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                         break;
@@ -428,7 +588,8 @@ public class MainActivity extends AppCompatActivity {
                             PushEngage.addProfileId(value.replaceAll("\\n", ""), new PushEngageResponseCallback() {
                                 @Override
                                 public void onSuccess(Object responseObject) {
-                                    Toast.makeText(MainActivity.this, getString(R.string.profile_id_added), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, getString(R.string.profile_id_added),
+                                            Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -437,7 +598,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         } else {
-                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.invalid_request_format),
+                                    Toast.LENGTH_SHORT).show();
                         }
                         break;
                     default:
