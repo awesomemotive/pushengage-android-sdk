@@ -96,7 +96,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'com.github.awesomemotive:pushengage-android-sdk:<latest-version>'
+    implementation 'com.github.awesomemotive:pushengage-android-sdk:0.0.6'
     implementation platform('com.google.firebase:firebase-bom:26.1.1')
 }
 ```
