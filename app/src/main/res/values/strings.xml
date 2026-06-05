@@ -2,6 +2,7 @@
     <string name="app_name">PushEngage</string>
     <string name="trigger">Trigger Campaigns</string>
     <string name="sendGoal">Send Goal</string>
+    <string name="track_event">Track Event</string>
     <string name="add_to_cart">Add to Cart</string>
     <string name="checkout">Checkout</string>
     <string name="device_token">Device Token</string>
@@ -36,17 +37,22 @@
     <string name="trigger_status_updated">Trigger Status Updated Successfully</string>
 
     <string name="enter_profile_id">Enter Profile Id</string>
+
+    <string name="identify">Identify</string>
+    <string name="logout">Logout</string>
+    <string name="identify_request">Enter subscriber fields as key value pairs. Valid keys: first_name, last_name, email, phone, gender, dob, language, profile_id, country, city, state, zip. \n Eg: {\"email\": \"jane@example.com\", \"profile_id\": \"user_42\"}</string>
+    <string name="logout_request">Comma separated field names to remove. Leave empty to clear the default PII set (first_name, last_name, email, phone, gender, dob, profile_id). \n Eg: email, profile_id</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
 
     <string name="subscriber_details">Subscriber Details</string>
-    <string name="subscriber_details_request">Comma separated strings of details u want(Leave it as empty if u want to fetch all) \n Eg: device_type, city, country</string>
+    <string name="subscriber_details_request">Comma separated strings of details you want (leave empty to fetch all) \n Eg: device_type, city, country</string>
     <string name="attributes">Attributes</string>
     <string name="set_attributes_request">Enter attributes as key value pairs \n Eg: {\"age\" : \"25\", \"height\": \"6.1\",
         \"name\": \"Sam Paul\"}</string>
-    <string name="delete_attributes_request">Comma separated strings of attributes u want to delete \n Eg: device_type, city, country</string>
-    <string name="add_segment_request">Comma separated strings of segments u want to add \n Eg: device_type, city, country</string>
-    <string name="delete_segment_request">Comma separated strings of segments u want to delete \n Eg: device_type, city, country</string>
+    <string name="delete_attributes_request">Comma separated strings of attributes you want to delete \n Eg: device_type, city, country</string>
+    <string name="add_segment_request">Comma separated strings of segments you want to add \n Eg: device_type, city, country</string>
+    <string name="delete_segment_request">Comma separated strings of segments you want to delete \n Eg: device_type, city, country</string>
     <string name="add_dynamic_segment_request">Array of Objects with segment name and duration \n Eg: [
           {
             name: sleepers,
@@ -74,10 +80,42 @@
     <string name="alert_price">Alert Price</string>
     <string name="request_notification_permission">Request Notification Permission</string>
     <string name="get_notification_permission_status">Get Notification Permission Status</string>
+    <string name="set_badge_count">Set Badge Count</string>
+    <string name="clear_badge_count">Clear Badge</string>
+    <string name="set_badge_count_request">Android has no system numeric-badge API, so this value is applied to the long-press shortcut menu of FUTURE notifications the SDK builds — not the launcher icon and not existing notifications. Enter 0 to clear all active notifications.</string>
+    <string name="set_badge_count_applied">Badge count %1$s saved. Will appear on the next push the SDK builds (long-press menu).</string>
+    <string name="set_badge_count_cleared">Cleared all active notifications.</string>
     <string name="get_subscription_status">Get Subscription Status</string>
     <string name="get_subscription_notification_status">Get Subscription Notification Status</string>
     <string name="subscribe">Subscribe</string>
     <string name="unsubscribe">Unsubscribe</string>
     <string name="get_subscriber_id">Get Subscriber ID</string>
+
+    <string name="settings">Settings</string>
+    <string name="settings_header">SDK Configuration</string>
+    <string name="settings_subheader">Configure the App ID and environment used to initialize the PushEngage SDK. Changes require an app restart.</string>
+    <string name="settings_app_id_label">App ID</string>
+    <string name="settings_app_id_hint">e.g. 3ca8257d-1f40-41e0-88bc-ea28dc6495ef</string>
+    <string name="settings_env_label">Environment</string>
+    <string name="settings_env_production">Production</string>
+    <string name="settings_env_staging">Staging</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_app_id_required">App ID is required</string>
+    <string name="settings_restart_title">Restart required</string>
+    <string name="settings_restart_message">Configuration saved. The app needs to restart for changes to take effect.</string>
+    <string name="settings_restart_now">Restart now</string>
+    <string name="settings_current_config">App ID: %1$s · %2$s</string>
+    <string name="settings_app_id_empty">not set</string>
+
+    <string name="section_diagnostics">Diagnostics</string>
+    <string name="section_subscription">Subscription</string>
+    <string name="section_permissions">Permissions</string>
+    <string name="section_profile_attributes">Profile &amp; Attributes</string>
+    <string name="section_segments">Segments</string>
+    <string name="section_goals_events">Goals &amp; Events</string>
+    <string name="section_triggers">Triggers</string>
+    <string name="section_other">Other</string>
+    <string name="compose_test">Compose Test</string>
+    <string name="waiting_for_token">Waiting for FCM token…</string>
 
 </resources>

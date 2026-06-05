@@ -57,8 +57,21 @@ internal class PENotificationBuilder(private val context: Context,
         setAccentColor(payload, notificationBuilder)
         setNotificationPriority(payload, notificationBuilder)
         setGroupKey(payload, notificationBuilder)
+        setBadgeCount(notificationBuilder)
 
         return notificationBuilder
+    }
+
+    /**
+     * Apply the badge count set via PushEngage.setBadgeCount(int). Android has no
+     * system numeric badge API, so the value is only surfaced in the launcher
+     * long-press shortcut menu.
+     */
+    private fun setBadgeCount(notificationBuilder: Builder) {
+        val badgeCount = prefs.badgeCount
+        if (badgeCount > 0) {
+            notificationBuilder.setNumber(badgeCount)
+        }
     }
 
     override fun setNotificationImages(payload: FCMPayloadModel,
@@ -171,6 +184,7 @@ internal class PENotificationBuilder(private val context: Context,
      * @param iconName Name of icon
      */
     private fun getActionButtonIconResourceId(iconName: String?): Int {
+        if (iconName.isNullOrEmpty()) return 0
         return try {
             val resources: Resources = context.applicationContext.resources
             resources.getIdentifier(iconName, "drawable", context.applicationContext.packageName)

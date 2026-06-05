@@ -2,11 +2,90 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/purple_500"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:title="@string/app_name"
+        app:titleTextColor="@color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <LinearLayout
+        android:id="@+id/event_log_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#1E1E1E"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/event_log_header"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="#2A2A2A"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:id="@+id/tv_event_log_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="Event log (0)" />
+
+            <Button
+                android:id="@+id/btn_event_log_clear"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:paddingHorizontal="12dp"
+                android:text="Clear"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_event_log_chevron"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:text="▲"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/event_log_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_event_log"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textColor="@color/white"
+                android:textIsSelectable="true"
+                android:textSize="11sp" />
+        </ScrollView>
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:layout_above="@id/event_log_panel">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -14,13 +93,80 @@
             android:layout_margin="16dp"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_current_config"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/device_token"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#DDDDDD"
+                app:strokeWidth="1dp"
+                app:contentPadding="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ENVIRONMENT"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_env_chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@color/blue"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="3dp"
+                            android:textColor="@color/white"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            tools:text="STAGING" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="10dp"
+                        android:background="#EEEEEE" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="APP ID"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="10sp"
+                        android:letterSpacing="0.1"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_app_id_value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="monospace"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="13sp"
+                        android:textIsSelectable="true"
+                        android:ellipsize="middle"
+                        android:singleLine="true"
+                        tools:text="3ca8257d-1f40-41e0-88bc-ea28dc6495ef" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:id="@+id/tv_device_token"
@@ -33,217 +179,280 @@
                 android:textIsSelectable="true"
                 android:textSize="14sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/device_hash"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+            <!-- Diagnostics -->
+            <LinearLayout
+                android:id="@+id/hdr_diagnostics"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_diagnostics" />
+                <TextView
+                    android:id="@+id/chev_diagnostics"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/body_diagnostics"
+                style="@style/SectionBody">
 
-            <TextView
-                android:id="@+id/tv_device_hash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
-                android:text="-"
-                app:backgroundTint="@color/blue"
-                android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_hash"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btn_hash_details"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_subscriber_details"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <TextView
+                    android:id="@+id/tv_device_hash"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="-"
+                    app:backgroundTint="@color/blue"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_get_attributes"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_attributes"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <!-- Subscription -->
+            <LinearLayout
+                android:id="@+id/hdr_subscription"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_subscription" />
+                <TextView
+                    android:id="@+id/chev_subscription"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_add_attributes"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/add_attributes"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <LinearLayout
+                android:id="@+id/body_subscription"
+                style="@style/SectionBody">
 
-            <Button
-                android:id="@+id/btn_set_attributes"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/set_attributes"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_subscribe"
+                    style="@style/DemoActionButton"
+                    android:text="@string/subscribe" />
 
-            <Button
-                android:id="@+id/btn_remove_attributes"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/delete_attributes"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_unsubscribe"
+                    style="@style/DemoActionButton"
+                    android:text="@string/unsubscribe" />
 
-            <Button
-                android:id="@+id/btn_add_profile_id"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/add_profile_id"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_get_subscription_status"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_subscription_status" />
 
-            <Button
-                android:id="@+id/btn_add_segment"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/add_segment"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_get_subscription_notification_status"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_subscription_notification_status" />
 
-            <Button
-                android:id="@+id/btn_remove_segment"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/delete_segment"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_get_subscriber_id"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_subscriber_id" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_add_dynamic_segment"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/add_dynamic_segments"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <!-- Permissions -->
+            <LinearLayout
+                android:id="@+id/hdr_permissions"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_permissions" />
+                <TextView
+                    android:id="@+id/chev_permissions"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_send_goal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/sendGoal"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <LinearLayout
+                android:id="@+id/body_permissions"
+                style="@style/SectionBody">
 
-            <Button
-                android:id="@+id/btn_trigger"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/trigger"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_request_notification_permission"
+                    style="@style/DemoActionButton"
+                    android:text="@string/request_notification_permission" />
 
-            <Button
-                android:id="@+id/btn_request_notification_permission"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/request_notification_permission"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_get_notification_permission_status"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_notification_permission_status" />
 
-            <Button
-                android:id="@+id/btn_get_notification_permission_status"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_notification_permission_status"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_set_badge_count"
+                    style="@style/DemoActionButton"
+                    android:text="@string/set_badge_count" />
 
-            <Button
-                android:id="@+id/btn_get_subscription_status"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_subscription_status"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_clear_badge_count"
+                    style="@style/DemoActionButton"
+                    android:text="@string/clear_badge_count" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_get_subscription_notification_status"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_subscription_notification_status"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <!-- Profile & Attributes -->
+            <LinearLayout
+                android:id="@+id/hdr_profile_attributes"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_profile_attributes" />
+                <TextView
+                    android:id="@+id/chev_profile_attributes"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_subscribe"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/subscribe"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+            <LinearLayout
+                android:id="@+id/body_profile_attributes"
+                style="@style/SectionBody">
 
-            <Button
-                android:id="@+id/btn_unsubscribe"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/unsubscribe"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_add_profile_id"
+                    style="@style/DemoActionButton"
+                    android:text="@string/add_profile_id" />
 
-            <Button
-                android:id="@+id/btn_get_subscriber_id"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:text="@string/get_subscriber_id"
-                app:backgroundTint="@color/blue"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_hash_details"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_subscriber_details" />
 
-            <Button
-                android:id="@+id/btn_compose_test"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="40dp"
-                android:text="Test ComponentActivity"
-                app:backgroundTint="@color/green"
-                android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/btn_get_attributes"
+                    style="@style/DemoActionButton"
+                    android:text="@string/get_attributes" />
 
+                <Button
+                    android:id="@+id/btn_add_attributes"
+                    style="@style/DemoActionButton"
+                    android:text="@string/add_attributes" />
+
+                <Button
+                    android:id="@+id/btn_set_attributes"
+                    style="@style/DemoActionButton"
+                    android:text="@string/set_attributes" />
+
+                <Button
+                    android:id="@+id/btn_remove_attributes"
+                    style="@style/DemoActionButton"
+                    android:text="@string/delete_attributes" />
+
+                <Button
+                    android:id="@+id/btn_identify"
+                    style="@style/DemoActionButton"
+                    android:text="@string/identify" />
+
+                <Button
+                    android:id="@+id/btn_logout"
+                    style="@style/DemoActionButton"
+                    android:text="@string/logout" />
+            </LinearLayout>
+
+            <!-- Segments -->
+            <LinearLayout
+                android:id="@+id/hdr_segments"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_segments" />
+                <TextView
+                    android:id="@+id/chev_segments"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/body_segments"
+                style="@style/SectionBody">
+
+                <Button
+                    android:id="@+id/btn_add_segment"
+                    style="@style/DemoActionButton"
+                    android:text="@string/add_segment" />
+
+                <Button
+                    android:id="@+id/btn_remove_segment"
+                    style="@style/DemoActionButton"
+                    android:text="@string/delete_segment" />
+
+                <Button
+                    android:id="@+id/btn_add_dynamic_segment"
+                    style="@style/DemoActionButton"
+                    android:text="@string/add_dynamic_segments" />
+            </LinearLayout>
+
+            <!-- Goals & Events -->
+            <LinearLayout
+                android:id="@+id/hdr_goals_events"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_goals_events" />
+                <TextView
+                    android:id="@+id/chev_goals_events"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/body_goals_events"
+                style="@style/SectionBody">
+
+                <Button
+                    android:id="@+id/btn_send_goal"
+                    style="@style/DemoActionButton"
+                    android:text="@string/sendGoal" />
+
+                <Button
+                    android:id="@+id/btn_track_event"
+                    style="@style/DemoActionButton"
+                    android:text="@string/track_event" />
+            </LinearLayout>
+
+            <!-- Triggers -->
+            <LinearLayout
+                android:id="@+id/hdr_triggers"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_triggers" />
+                <TextView
+                    android:id="@+id/chev_triggers"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/body_triggers"
+                style="@style/SectionBody">
+
+                <Button
+                    android:id="@+id/btn_trigger"
+                    style="@style/DemoActionButton"
+                    android:text="@string/trigger" />
+            </LinearLayout>
+
+            <!-- Other -->
+            <LinearLayout
+                android:id="@+id/hdr_other"
+                style="@style/SectionHeaderRow">
+                <TextView
+                    style="@style/SectionHeaderTitle"
+                    android:text="@string/section_other" />
+                <TextView
+                    android:id="@+id/chev_other"
+                    style="@style/SectionHeaderChevron" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/body_other"
+                style="@style/SectionBody"
+                android:layout_marginBottom="32dp">
+
+                <Button
+                    android:id="@+id/btn_compose_test"
+                    style="@style/DemoActionButton.Accent"
+                    android:text="@string/compose_test" />
+            </LinearLayout>
 
         </LinearLayout>
 

@@ -1,7 +1,6 @@
 package com.pushengage.pushengage.core
 
 import android.app.NotificationManager
-import android.text.TextUtils
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -42,9 +41,9 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
         try {
             val jsonObject = (message.data as? Map<*, *>?)?.let { JSONObject(it) }
             val payload: FCMPayloadModel = gson.fromJson(jsonObject?.toString(), FCMPayloadModel::class.java)
-            if (payload.channelId.isNullOrEmpty()) {
-                payload.channelId = PEConstants.DEFAULT_CHANNEL_ID
-            }
+            val originalChannelId = payload.channelId
+            val isDefaultChannel = originalChannelId.isNullOrEmpty()
+            val resolvedChannelId = if (originalChannelId.isNullOrEmpty()) PEConstants.DEFAULT_CHANNEL_ID else originalChannelId
             additionalData = gson.fromJson(payload.additionalData, HashMap::class.java) as? HashMap<String, String>?
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
             if (notificationManager != null) {
@@ -55,7 +54,7 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
 
                     val areNotificationsEnabled: Boolean = areNotificationsEnabled()
                     peNotificationManager.determineNotificationSubscriberChanges(areNotificationsEnabled)
-                    processPayloadData(areNotificationsEnabled, payload, peNotificationManager, notificationBuilder)
+                    processPayloadData(areNotificationsEnabled, payload, resolvedChannelId, isDefaultChannel, peNotificationManager, notificationBuilder)
                 } }
 
             }
@@ -105,19 +104,22 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
     /**
      * Process FCM payload
      * @param areNotificationsEnabled whether notifications are enabled or not
+     * @param resolvedChannelId channel id to use downstream (sentinel if payload had none)
+     * @param isDefaultChannel true if the original payload omitted channelId — signals that no
+     *                         channel-fetch API call should be made; the OS default channel is used
      */
     private fun processPayloadData(areNotificationsEnabled: Boolean,
                                    payload: FCMPayloadModel,
+                                   resolvedChannelId: String,
+                                   isDefaultChannel: Boolean,
                                    peNotificationManager: PENotificationManagerType,
                                    notificationBuilder: NotificationCompat.Builder) {
         if (!payload.reFetch.isNullOrEmpty() && payload.reFetch.equals("1", ignoreCase = true)) {
             val fetchRequest = FetchRequest(payload.tag, payload.postbackData)
 
-            payload.channelId?.let { channelId ->
-                payload.notificationId?.let {notificationId ->
-                    peNotificationManager.getSponsoredNotificationInfo(fetchRequest, channelId, notificationId, false) {payload: FCMPayloadModel, isSponsored: Boolean ->
-                        sendNotification(payload, isSponsored, peNotificationManager, notificationBuilder)
-                    }
+            payload.notificationId?.let { notificationId ->
+                peNotificationManager.getSponsoredNotificationInfo(fetchRequest, resolvedChannelId, notificationId, false) { fetchedPayload: FCMPayloadModel, isSponsored: Boolean ->
+                    sendNotification(fetchedPayload, isSponsored, resolvedChannelId, isDefaultChannel, peNotificationManager, notificationBuilder)
                 }
             }
 
@@ -125,7 +127,7 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
             if (areNotificationsEnabled) {
                 peNotificationManager.trackNotificationViewed(payload.tag, false)
             }
-            sendNotification(payload, false, peNotificationManager, notificationBuilder)
+            sendNotification(payload, false, resolvedChannelId, isDefaultChannel, peNotificationManager, notificationBuilder)
         }
     }
 
@@ -133,28 +135,20 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
      * Create and show a simple notification containing the received FCM message.
      * @param payload FCM payload received
      * @param isSponsored is sponsored one
+     * @param resolvedChannelId channel id to bind the notification to
+     * @param isDefaultChannel true when the original payload had no channelId — skip API fetch
      */
     private fun sendNotification(payload: FCMPayloadModel,
                                  isSponsored: Boolean,
+                                 resolvedChannelId: String,
+                                 isDefaultChannel: Boolean,
                                  peNotificationManager: PENotificationManagerType,
                                  notificationBuilder: NotificationCompat.Builder) {
-        val channelId: String? = getChannelId(payload)
         try {
-            channelId?.let {id ->
-                peNotificationManager.setChannelInformation(id, payload, false, notificationBuilder, false)
-            }
+            peNotificationManager.setChannelInformation(resolvedChannelId, payload, isDefaultChannel, notificationBuilder, false)
         } catch (e: Exception) {
             PELogger.error("sendNotification: error", e)
         }
-    }
-
-    /**
-     * Get channelId from POJO
-     * @param payload FCM payload received
-     */
-    private fun getChannelId(payload: FCMPayloadModel): String? {
-        val channelId = payload.channelId
-        return if (TextUtils.isEmpty(channelId)) PEConstants.DEFAULT_CHANNEL_ID else channelId
     }
 
     /**
@@ -164,15 +158,21 @@ internal class PEFirebaseMessagingService : FirebaseMessagingService() {
      */
     private fun upgradeToken(token: String) {
         prefs = PEPrefs(this)
+        PELogger.debug("onNewToken: upgrading subscriber with new FCM token: $token")
         var upgradeSubscriberRequest = UpgradeSubscriberRequest()
         val subscription = upgradeSubscriberRequest.Subscription(token, prefs?.projectId)
         upgradeSubscriberRequest = UpgradeSubscriberRequest(prefs?.hash, subscription, prefs?.siteId)
         val addRecordsResponseCall = RestClient.getBackendClient(applicationContext).upgradeSubscriber(upgradeSubscriberRequest)
         addRecordsResponseCall.enqueue(object : Callback<ResponseBody?> {
             override fun onResponse(call: Call<ResponseBody?>, response: Response<ResponseBody?>) {
+                PELogger.debug("upgradeSubscriber response: ${response.code()} ${if (response.isSuccessful) "success" else "failed"}")
+                if (response.isSuccessful) {
+                    prefs?.setDeviceToken(token)
+                }
             }
 
             override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                PELogger.error("upgradeSubscriber failed", t)
             }
         })
     }

@@ -29,10 +29,12 @@ public class SplashActivity extends AppCompatActivity {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                startActivity(intent);
+                Class<?> next = new DemoPrefs(SplashActivity.this).isConfigured()
+                        ? MainActivity.class
+                        : SettingsActivity.class;
+                startActivity(new Intent(SplashActivity.this, next));
                 finish();
             }
-        }, 3000);
+        }, 600);
     }
 }

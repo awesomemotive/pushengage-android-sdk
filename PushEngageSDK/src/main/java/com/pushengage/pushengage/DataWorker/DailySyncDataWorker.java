@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters;
 
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.RestClient.RestClient;
+import com.pushengage.pushengage.helper.PELogger;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.model.request.UpdateSubscriberStatusRequest;
 import com.pushengage.pushengage.model.response.NetworkResponse;
@@ -29,6 +30,16 @@ public class DailySyncDataWorker extends Worker {
     @Override
     public Result doWork() {
         prefs = new PEPrefs(getApplicationContext());
+        String siteKey = prefs.getSiteKey();
+        if (siteKey == null || siteKey.trim().isEmpty()) {
+            // WorkManager persists this worker across upgrades with KEEP policy, so a
+            // misconfigured install keeps firing daily. Short-circuit to stop the flood
+            // and surface the cause in logcat instead of swallowing the 400 silently.
+            PELogger.error(
+                    "App ID is not configured. Call PushEngage.Builder().setAppId(\"YOUR_APP_ID\") during app startup. Daily sync skipped.",
+                    null);
+            return Result.success();
+        }
         try {
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat
                     .from(getApplicationContext());

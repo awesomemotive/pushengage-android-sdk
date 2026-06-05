@@ -81,6 +81,9 @@ public class NotificationService extends Service {
      * @param isRetry
      */
     public void notificationCLick(Context context, String deviceHash, String action, String tag, boolean isRetry) {
+        if (prefs == null && context != null) {
+            prefs = new PEPrefs(context);
+        }
         if (PEUtilities.checkNetworkConnection(context)) {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put("referer", "https://pushengage.com/service-worker.js");
@@ -111,7 +114,7 @@ public class NotificationService extends Service {
                         } else {
                             ErrorLogRequest errorLogRequest = new ErrorLogRequest();
                             String jsonStr = gson.toJson(response.body());
-                            ErrorLogRequest.Data data = errorLogRequest.new Data(tag, prefs.getHash(), PEConstants.MOBILE, PEUtilities.getTimeZone(), jsonStr);
+                            ErrorLogRequest.Data data = errorLogRequest.new Data(tag, getPrefsHashSafe(), PEConstants.MOBILE, PEUtilities.getTimeZone(), jsonStr);
                             errorLogRequest.setApp(PEConstants.ANDROID_SDK);
                             errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                             errorLogRequest.setData(data);
@@ -133,7 +136,7 @@ public class NotificationService extends Service {
 
                     } else {
                         ErrorLogRequest errorLogRequest = new ErrorLogRequest();
-                        ErrorLogRequest.Data data = errorLogRequest.new Data(tag, prefs.getHash(), PEConstants.MOBILE, PEUtilities.getTimeZone(), t.getMessage());
+                        ErrorLogRequest.Data data = errorLogRequest.new Data(tag, getPrefsHashSafe(), PEConstants.MOBILE, PEUtilities.getTimeZone(), t.getMessage());
                         errorLogRequest.setApp(PEConstants.ANDROID_SDK);
                         errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
                         errorLogRequest.setData(data);
@@ -162,5 +165,13 @@ public class NotificationService extends Service {
             thread.start();
             stopSelf();
         }
+    }
+
+    private String getPrefsHashSafe() {
+        if (prefs == null) {
+            return "";
+        }
+        String hash = prefs.getHash();
+        return hash == null ? "" : hash;
     }
 }
