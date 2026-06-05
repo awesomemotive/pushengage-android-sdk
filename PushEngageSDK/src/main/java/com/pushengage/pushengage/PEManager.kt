@@ -12,6 +12,8 @@ import com.pushengage.pushengage.helper.PEPrefs
 import com.pushengage.pushengage.helper.PEUtilities
 import com.pushengage.pushengage.model.request.Goal
 import com.pushengage.pushengage.model.request.GoalRequest
+import com.pushengage.pushengage.model.request.TrackEvent
+import com.pushengage.pushengage.model.request.TrackEventRequest
 import com.pushengage.pushengage.model.request.TriggerAlert
 import com.pushengage.pushengage.model.request.TriggerCampaign
 import com.pushengage.pushengage.model.request.TriggerCampaignRequest
@@ -37,9 +39,14 @@ interface GoalManagerType {
     fun sendGoal(goal: Goal, callback: PushEngageResponseCallback?)
 }
 
+interface EventManagerType {
+    fun trackEvent(event: TrackEvent, callback: PushEngageResponseCallback?)
+}
+
 interface PEManagerType:
     CampaignManagerType,
-    GoalManagerType {}
+    GoalManagerType,
+    EventManagerType {}
 
 final class PEManager(private val context: Context,
                       private val preferences: PEPrefs): PEManagerType {
@@ -103,7 +110,7 @@ final class PEManager(private val context: Context,
                 }
 
                 override fun onFailure(call: Call<NetworkResponse>, t: Throwable) {
-                    callback?.onFailure(400, t.message)
+                    callback?.onFailure(400, t.message ?: context.getString(R.string.server_error))
                 }
 
             })
@@ -171,7 +178,7 @@ final class PEManager(private val context: Context,
                 }
 
                 override fun onFailure(call: Call<TriggerCampaignResponse>, t: Throwable) {
-                    callback?.onFailure(400, t.message)
+                    callback?.onFailure(400, t.message ?: context.getString(R.string.server_error))
                 }
 
             })
@@ -258,7 +265,7 @@ final class PEManager(private val context: Context,
                 }
 
                 override fun onFailure(call: Call<NetworkResponse>, t: Throwable) {
-                    callback?.onFailure(400, t.message)
+                    callback?.onFailure(400, t.message ?: context.getString(R.string.server_error))
                 }
 
             })
@@ -326,12 +333,106 @@ final class PEManager(private val context: Context,
                 }
 
                 override fun onFailure(call: Call<NetworkResponse>, t: Throwable) {
-                    callback?.onFailure(400, t.message)
+                    callback?.onFailure(400, t.message ?: context.getString(R.string.server_error))
                 }
             })
         } else {
             callback?.onFailure(400, validationResult)
         }
+    }
+
+    override fun trackEvent(event: TrackEvent, callback: PushEngageResponseCallback?) {
+        if (event.eventName.isEmpty()) {
+            callback?.onFailure(400, "Event name is required")
+            return
+        }
+
+        val dataError = validateEventData(event.data)
+        if (dataError != null) {
+            callback?.onFailure(400, dataError)
+            return
+        }
+
+        val validationResult = PEUtilities.apiPreValidate(context)
+        if (validationResult.equals(PEConstants.VALID)) {
+            val request = TrackEventRequest(
+                siteId = preferences.siteId,
+                deviceTokenHash = preferences.hash,
+                eventName = event.eventName,
+                provider = event.provider ?: "PushEngage",
+                eventType = event.eventType ?: "PushEngage.CustomEvent",
+                profileId = event.profileId,
+                data = event.data ?: emptyMap()
+            )
+
+            val osInfo = "${Build.VERSION.SDK_INT}"
+            val requestCall = RestClient.getBackendClient(context).trackEvent(request, PushEngage.getSdkVersion(), osInfo)
+
+            requestCall.enqueue(object : Callback<NetworkResponse> {
+                override fun onResponse(
+                    call: Call<NetworkResponse>,
+                    response: Response<NetworkResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        callback?.onSuccess(response.body())
+                    } else {
+                        if (response.errorBody() != null) {
+                            try {
+                                val errorBody = response.errorBody()?.charStream()?.readText()
+                                errorBody?.let { body ->
+                                    val errorJson = JSONObject(body)
+                                    val errorCode: Int? = errorJson.opt("error_code") as? Int
+                                    val errorMessage: String? =
+                                        errorJson.opt("error_message") as? String
+                                    callback?.onFailure(errorCode, errorMessage)
+                                }
+                            } catch (e: Exception) {
+                                callback?.onFailure(
+                                    response.code(),
+                                    context.getString(R.string.server_error)
+                                )
+                            }
+                        } else {
+                            callback?.onFailure(
+                                response.code(),
+                                context.getString(R.string.server_error)
+                            )
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<NetworkResponse>, t: Throwable) {
+                    callback?.onFailure(400, t.message ?: context.getString(R.string.server_error))
+                }
+            })
+        } else {
+            callback?.onFailure(400, validationResult)
+        }
+    }
+
+    /**
+     * Validates the value types in `TrackEvent.data` before serialization. The
+     * backend accepts strings, numbers, and booleans; anything else (Lists,
+     * nested Maps, arbitrary objects) round-trips through Gson but is silently
+     * dropped or rejected server-side. Fail fast client-side with a clear
+     * message instead.
+     *
+     * @return error message describing the first offending entry, or null when
+     *         every entry is acceptable (including the case where data is null).
+     */
+    private fun validateEventData(data: Map<String, Any?>?): String? {
+        if (data == null) return null
+        for ((key, value) in data) {
+            if (key.isBlank()) {
+                return "TrackEvent.data keys must be non-blank"
+            }
+            if (value == null) continue
+            when (value) {
+                is String, is Number, is Boolean -> continue
+                else -> return "TrackEvent.data['$key'] has unsupported type ${value.javaClass.simpleName}; only String, Number, and Boolean are allowed"
+            }
+        }
+        return null
     }
 
 }

@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters;
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.RestClient.RestClient;
 import com.pushengage.pushengage.helper.PEConstants;
+import com.pushengage.pushengage.helper.PELogger;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.UpdateSubscriberRequest;
@@ -57,8 +58,18 @@ public class WeeklySyncDataWorker extends Worker {
     public void callAndroidSync() {
         if (PEUtilities.checkNetworkConnection(getApplicationContext())) {
             prefs = new PEPrefs(getApplicationContext());
+            String siteKey = prefs.getSiteKey();
+            if (siteKey == null || siteKey.trim().isEmpty()) {
+                // WorkManager persists this worker across upgrades with KEEP policy, so a
+                // misconfigured install keeps firing weekly. Short-circuit to stop the flood
+                // and surface the cause in logcat instead of swallowing the 400 silently.
+                PELogger.error(
+                        "App ID is not configured. Call PushEngage.Builder().setAppId(\"YOUR_APP_ID\") during app startup. Weekly sync skipped.",
+                        null);
+                return;
+            }
             Call<AndroidSyncResponse> addRecordsResponseCall = RestClient.getBackendCdnClient(getApplicationContext())
-                    .androidSync(prefs.getSiteKey());
+                    .androidSync(siteKey);
             addRecordsResponseCall.enqueue(new Callback<AndroidSyncResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<AndroidSyncResponse> call,
@@ -74,11 +85,24 @@ public class WeeklySyncDataWorker extends Worker {
                             prefs.setLoggerUrl(androidSyncResponse.getData().getApi().getLog());
                             prefs.setSiteId(androidSyncResponse.getData().getSiteId());
                             prefs.setProjectId(androidSyncResponse.getData().getFirebaseSenderId());
+                            prefs.setFirebaseProjectId(androidSyncResponse.getData().getFirebaseProjectId());
                             prefs.setDeleteOnNotificationDisable(
                                     androidSyncResponse.getData().getDeleteOnNotificationDisable());
                             prefs.setSiteStatus(androidSyncResponse.getData().getSiteStatus());
                             prefs.setGeoFetch(androidSyncResponse.getData().getGeoLocationEnabled());
                             prefs.setEu(androidSyncResponse.getData().getIsEu());
+
+                            // Catches dashboard drift between subscribes — a sender_id or
+                            // project_id rotated incorrectly on the dashboard after initial
+                            // subscribe would otherwise go unnoticed until the next subscribe()
+                            // call. Listener fires within at most a week of the drift; the
+                            // log line surfaces to logcat for QA. We do NOT short-circuit
+                            // callUpdateSubscriberHash() below because the subscriber row
+                            // already exists — only metadata refresh, no row creation.
+                            PushEngage.runConfigValidation(
+                                    androidSyncResponse.getData().getFirebaseSenderId(),
+                                    androidSyncResponse.getData().getFirebaseProjectId());
+
                             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat
                                     .from(getApplicationContext());
                             boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();

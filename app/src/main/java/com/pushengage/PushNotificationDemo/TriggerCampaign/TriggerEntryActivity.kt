@@ -4,14 +4,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.pushengage.PushNotificationDemo.R
-import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback
 import com.pushengage.pushengage.PushEngage
 import com.pushengage.pushengage.model.request.TriggerCampaign
 
@@ -22,7 +20,7 @@ class TriggerEntryActivity : AppCompatActivity() {
     private lateinit var campaignName: TextInputEditText
     private lateinit var eventName: TextInputEditText
     private lateinit var referenceId: TextInputEditText
-    private lateinit var sendTrigger: Button
+    private lateinit var sendTrigger: MaterialButton
     private lateinit var profileId: TextInputEditText
 
     private lateinit var adapter: CustomAdapter
@@ -34,9 +32,11 @@ class TriggerEntryActivity : AppCompatActivity() {
     }
 
     private fun setup() {
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        supportActionBar?.setDisplayHomeAsUpEnabled(true);
-        title = "Trigger Campaign"
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener { finish() }
         campaignName = findViewById(R.id.campaignName)
         eventName = findViewById(R.id.eventName)
         referenceId = findViewById(R.id.referenceId)
@@ -52,16 +52,8 @@ class TriggerEntryActivity : AppCompatActivity() {
                 referenceId.text.toString().takeIf { it.isNotEmpty() },
                 profileId.text.toString().takeIf { it.isNotEmpty() },
                 dataMap)
-            PushEngage.sendTriggerEvent(triggerCampaign, object : PushEngageResponseCallback {
-                override fun onSuccess(responseObject: Any?) {
-                    Toast.makeText(this@TriggerEntryActivity,"Send Trigger Alert Successfully", Toast.LENGTH_LONG).show()
-                }
-
-                override fun onFailure(errorCode: Int?, errorMessage: String?) {
-                    Toast.makeText(this@TriggerEntryActivity,errorMessage.toString(), Toast.LENGTH_LONG).show()
-                }
-
-            })
+            PushEngage.sendTriggerEvent(triggerCampaign,
+                com.pushengage.PushNotificationDemo.loggingCallback(this, "sendTriggerEvent"))
         }
 
         dataList.add(CustomData("","", DataCellState.add))

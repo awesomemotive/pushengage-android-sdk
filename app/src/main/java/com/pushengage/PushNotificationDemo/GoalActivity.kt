@@ -1,15 +1,13 @@
 package com.pushengage.PushNotificationDemo
 
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 import com.pushengage.pushengage.PushEngage
 import com.pushengage.pushengage.model.request.Goal
 
@@ -18,14 +16,16 @@ class GoalActivity : AppCompatActivity() {
     private lateinit var nameInput: EditText
     private lateinit var countInput: EditText
     private lateinit var valueInput: EditText
-    private lateinit var sendGoalButton: Button
+    private lateinit var sendGoalButton: MaterialButton
     private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_goal)
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = "Send Goal"
+        toolbar.setNavigationOnClickListener { finish() }
         nameInput = findViewById(R.id.goalNameInput)
         countInput = findViewById(R.id.goalCountInput)
         valueInput = findViewById(R.id.goalValueInput)
@@ -54,19 +54,16 @@ class GoalActivity : AppCompatActivity() {
         }
 
         val goal = Goal(nameInput.text.toString(), count,  value)
-        PushEngage.sendGoal(goal, object: PushEngageResponseCallback {
-            override fun onSuccess(responseObject: Any?) {
+        PushEngage.sendGoal(goal, loggingCallback(this, "sendGoal",
+            onSuccess = {
                 progressBar.visibility = View.GONE
                 sendGoalButton.isEnabled = true
-                Toast.makeText(this@GoalActivity, "Success", Toast.LENGTH_SHORT).show()
-            }
-
-            override fun onFailure(errorCode: Int?, errorMessage: String?) {
+            },
+            onFailure = { _, _ ->
                 progressBar.visibility = View.GONE
                 sendGoalButton.isEnabled = true
-                Toast.makeText(this@GoalActivity, "Failure", Toast.LENGTH_SHORT).show()
             }
-        })
+        ))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

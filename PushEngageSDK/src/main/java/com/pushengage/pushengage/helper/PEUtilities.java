@@ -126,4 +126,21 @@ public class PEUtilities {
 
         return PEConstants.VALID;
     }
+
+    /**
+     * Restricts a User-Agent segment to {@code [A-Za-z0-9._-]}. Out-of-set characters and
+     * leading/trailing whitespace are stripped so a slash-delimited UA stays parseable.
+     * Capped at 64 characters to keep the header bounded. Empty or null input yields
+     * {@code fallback}.
+     */
+    public static String sanitizeUaSegment(String value, String fallback) {
+        if (value == null) return fallback;
+        String trimmed = value.trim().replaceAll("[^A-Za-z0-9._-]", "");
+        if (trimmed.isEmpty()) return fallback;
+        return trimmed.length() > 64 ? trimmed.substring(0, 64) : trimmed;
+    }
+
+    public static String sanitizeUaSegment(String value) {
+        return sanitizeUaSegment(value, "");
+    }
 }

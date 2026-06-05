@@ -15,6 +15,7 @@ import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.R;
 import com.pushengage.pushengage.helper.PEConstants;
 import com.pushengage.pushengage.helper.PELogger;
+import com.pushengage.pushengage.helper.PEPlatform;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.AddDynamicSegmentRequest;
@@ -25,7 +26,7 @@ import com.pushengage.pushengage.model.request.ErrorLogRequest;
 import com.pushengage.pushengage.model.request.FetchRequest;
 import com.pushengage.pushengage.model.request.GoalRequest;
 import com.pushengage.pushengage.model.request.RecordsRequest;
-import com.pushengage.pushengage.model.request.RemoveDynamicSegmentRequest;
+import com.pushengage.pushengage.model.request.TrackEventRequest;
 import com.pushengage.pushengage.model.request.RemoveSegmentRequest;
 import com.pushengage.pushengage.model.request.SegmentHashArrayRequest;
 import com.pushengage.pushengage.model.request.TriggerCampaignRequest;
@@ -73,50 +74,41 @@ import retrofit2.http.Query;
 public class RestClient {
 
     private static final String TAG = "RestClient";
-    private static Retrofit unAuthorisedRetrofitClient;
-    private static Context globalContext;
-    private static PEPrefs prefs;
 
     public RestClient() {
     }
 
     public static RTApiInterface getBackendClient(Context context) {
-        globalContext = context;
-        prefs = new PEPrefs(context);
-        unAuthorisedRetrofitClient = getRetrofitClient(null, PEConstants.BASE);
-        return unAuthorisedRetrofitClient.create(RTApiInterface.class);
+        return getRetrofitClient(context, null, PEConstants.BASE).create(RTApiInterface.class);
     }
 
     public static RTApiInterface getBackendCdnClient(Context context) {
-        globalContext = context;
-        prefs = new PEPrefs(context);
-        unAuthorisedRetrofitClient = getRetrofitClient(null, PEConstants.BASE_CDN);
-        return unAuthorisedRetrofitClient.create(RTApiInterface.class);
+        return getRetrofitClient(context, null, PEConstants.BASE_CDN).create(RTApiInterface.class);
     }
 
     public static RTApiInterface getTriggerClient(Context context) {
-        globalContext = context;
-        prefs = new PEPrefs(context);
-        unAuthorisedRetrofitClient = getRetrofitClient(null, PEConstants.TRIGGER);
-        return unAuthorisedRetrofitClient.create(RTApiInterface.class);
+        return getRetrofitClient(context, null, PEConstants.TRIGGER).create(RTApiInterface.class);
     }
 
     public static RTApiInterface getLogClient(Context context) {
-        globalContext = context;
-        prefs = new PEPrefs(context);
-        unAuthorisedRetrofitClient = getRetrofitClient(null, PEConstants.LOG);
-        return unAuthorisedRetrofitClient.create(RTApiInterface.class);
+        return getRetrofitClient(context, null, PEConstants.LOG).create(RTApiInterface.class);
     }
 
     public static RTApiInterface getAnalyticsClient(Context context, Map<String, String> headers) {
-        globalContext = context;
-        prefs = new PEPrefs(context);
-        unAuthorisedRetrofitClient = getRetrofitClient(headers, PEConstants.ANALYTICS);
-        return unAuthorisedRetrofitClient.create(RTApiInterface.class);
+        return getRetrofitClient(context, headers, PEConstants.ANALYTICS).create(RTApiInterface.class);
     }
 
-    public static Retrofit getRetrofitClient(Map<String, String> headers, String urlType) {
-        String baseUrl = getBaseUrl(urlType);
+    static Retrofit getRetrofitClient(Context context, Map<String, String> headers, String urlType) {
+        // Capture context + prefs as finals so the interceptor closes over its own
+        // values rather than reading mutable class state on a background dispatcher
+        // thread. Each call factory now gets a stable view of the prefs/context it
+        // was constructed with, eliminating the cross-call write-write race that
+        // existed when these lived as static fields.
+        final Context appContext = context.getApplicationContext() != null
+                ? context.getApplicationContext()
+                : context;
+        final PEPrefs prefs = new PEPrefs(appContext);
+        String baseUrl = getBaseUrl(prefs, urlType);
 
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         if(PELogger.isLoggingEnabled()) {
@@ -126,34 +118,32 @@ public class RestClient {
         }
 
         OkHttpClient.Builder okClientBuilder = new OkHttpClient().newBuilder();
-        okClientBuilder.addInterceptor(interceptor);
+        // Logging runs as a network interceptor so it captures the final outbound
+        // request — including SDK-added headers (User-Agent, X-Pe-*) and OkHttp's
+        // own auto-added headers (Host, Accept-Encoding). An application-level
+        // logging interceptor would see the request before our header interceptor
+        // decorates it, hiding everything we care about debugging.
+        okClientBuilder.addNetworkInterceptor(interceptor);
 
         okClientBuilder.addInterceptor(new Interceptor() {
             @Override
             public okhttp3.Response intercept(Chain chain) throws IOException {
                 Request.Builder requestBuilder = chain.request().newBuilder();
-                PackageInfo pInfo = null;
-                String sdkVersion = "";
-                try {
-                    pInfo = globalContext.getPackageManager().getPackageInfo(globalContext.getPackageName(), 0);
-                    sdkVersion = pInfo.versionName;
-                } catch (PackageManager.NameNotFoundException e) {
-//                    e.printStackTrace();
-                }
+                String sdkVersion = PushEngage.getSdkVersion();
                 requestBuilder.addHeader("content-type", "application/json");
 
                 requestBuilder.addHeader("X-Pe-Client", "Android");
-                requestBuilder.addHeader("X-Pe-Client-Version", Build.VERSION.RELEASE);
-                requestBuilder.addHeader("X-Pe-Sdk-Version", sdkVersion);
-                requestBuilder.addHeader("X-Pe-App-Id", prefs.getSiteKey());
+                addHeaderIfValuePresent(requestBuilder, "X-Pe-Client-Version", Build.VERSION.RELEASE);
+                addHeaderIfValuePresent(requestBuilder, "X-Pe-Sdk-Version", sdkVersion);
+                requestBuilder.addHeader("X-Pe-App-Id", getSafeHeaderValue(prefs.getSiteKey()));
 
-                String userAgent = String.format("android-%s/sdk-%s/app-%s", Build.VERSION.RELEASE, sdkVersion, prefs.getSiteKey());
+                String userAgent = buildUserAgent(appContext, prefs, sdkVersion);
                 requestBuilder.removeHeader("User-Agent");
                 requestBuilder.addHeader("User-Agent", userAgent);
 
                 if (headers != null) {
                     for (Map.Entry<String, String> entry : headers.entrySet()) {
-                        requestBuilder.addHeader(entry.getKey(), entry.getValue());
+                        addHeaderIfValuePresent(requestBuilder, entry.getKey(), entry.getValue());
                     }
                 }
                 Request request = requestBuilder.build();
@@ -164,7 +154,7 @@ public class RestClient {
 //                            Log.d(TAG, " 404 response Called");
 
                             try {
-                                request = callAddSubscriberAPI(request, prefs.getHash());
+                                request = callAddSubscriberAPI(appContext, prefs, request, prefs.getHash());
                             } catch (Exception e) {
 //                                e.printStackTrace();
                             }
@@ -194,7 +184,7 @@ public class RestClient {
         return retrofitClient;
     }
 
-    private static String getBaseUrl(String urlType) {
+    private static String getBaseUrl(PEPrefs prefs, String urlType) {
         String baseUrl = "";
         switch (urlType) {
             case PEConstants.BASE_CDN:
@@ -272,11 +262,62 @@ public class RestClient {
         return baseUrl;
     }
 
-    private static Request callAddSubscriberAPI(Request request, String oldHash) {
+    private static void addHeaderIfValuePresent(Request.Builder requestBuilder, String key, String value) {
+        if (!TextUtils.isEmpty(key) && value != null) {
+            requestBuilder.addHeader(key, value);
+        }
+    }
+
+    private static String getSafeHeaderValue(String value) {
+        return value == null ? "" : value;
+    }
+
+    /**
+     * Composes the SDK User-Agent in the slash-delimited shape:
+     *   Android/<osVer>/<apiLevel>/<manufacturer>/<pkg>/<appVer>/SDK/<sdkVer>/<flavor>[/<wrapperVer>]
+     * Manufacturer is included for OEM-specific FCM/notification triage (Xiaomi,
+     * Huawei, etc.). The trailing wrapperVer slot is omitted when no wrapper plugin
+     * has registered its version, so segment count signals native vs wrapped.
+     */
+    private static String buildUserAgent(Context context, PEPrefs prefs, String sdkVersion) {
+        String pkg = PEUtilities.sanitizeUaSegment(context.getPackageName());
+        String appVer = "";
+        try {
+            PackageManager pm = context.getPackageManager();
+            PackageInfo info = pm.getPackageInfo(context.getPackageName(), 0);
+            if (info != null && info.versionName != null) {
+                appVer = PEUtilities.sanitizeUaSegment(info.versionName);
+            }
+        } catch (Exception ignored) {
+            // Host app's own package missing from PackageManager is effectively
+            // impossible; fall through with empty appVer rather than failing the request.
+        }
+        String flavor = PEUtilities.sanitizeUaSegment(prefs.getPlatform(), PEPlatform.ANDROID);
+        String wrapperVer = PEUtilities.sanitizeUaSegment(prefs.getWrapperVersion());
+        String osVer = PEUtilities.sanitizeUaSegment(Build.VERSION.RELEASE);
+        String apiLevel = String.valueOf(Build.VERSION.SDK_INT);
+        String manufacturer = PEUtilities.sanitizeUaSegment(Build.MANUFACTURER);
+        String safeSdkVersion = PEUtilities.sanitizeUaSegment(sdkVersion);
+
+        StringBuilder ua = new StringBuilder()
+                .append("Android/").append(osVer)
+                .append('/').append(apiLevel)
+                .append('/').append(manufacturer)
+                .append('/').append(pkg)
+                .append('/').append(appVer)
+                .append("/SDK/").append(safeSdkVersion)
+                .append('/').append(flavor);
+        if (!wrapperVer.isEmpty()) {
+            ua.append('/').append(wrapperVer);
+        }
+        return ua.toString();
+    }
+
+    private static Request callAddSubscriberAPI(Context context, PEPrefs prefs, Request request, String oldHash) {
         String timeZone = PEUtilities.getTimeZone();
         String language = Locale.getDefault().getLanguage();
         String device = "";
-        if (globalContext.getResources().getBoolean(R.bool.is_tablet)) {
+        if (context.getResources().getBoolean(R.bool.is_tablet)) {
             device = PEConstants.TABLET;
         } else {
             device = PEConstants.MOBILE;
@@ -285,7 +326,7 @@ public class RestClient {
         String deviceModel = android.os.Build.MODEL;
         String deviceManufacturer = android.os.Build.MANUFACTURER;
         String deviceVersion = Build.VERSION.RELEASE;
-        String packageName = globalContext.getPackageName();
+        String packageName = context.getPackageName();
 
         int width = Resources.getSystem().getDisplayMetrics().widthPixels;
         int height = Resources.getSystem().getDisplayMetrics().heightPixels;
@@ -298,10 +339,14 @@ public class RestClient {
 
 
         try {
-            Call<AddSubscriberResponse> addSubscriberResponseCall = RestClient.getBackendClient(globalContext).addSubscriber(addSubscriberRequest, PushEngage.getSdkVersion(), String.valueOf(prefs.getEu()), String.valueOf(prefs.isGeoFetch()));
+            Call<AddSubscriberResponse> addSubscriberResponseCall = RestClient.getBackendClient(context).addSubscriber(addSubscriberRequest, PushEngage.getSdkVersion(), String.valueOf(prefs.getEu()), String.valueOf(prefs.isGeoFetch()));
             retrofit2.Response<AddSubscriberResponse> response = addSubscriberResponseCall.execute();
             AddSubscriberResponse apiResponse = response.body();
             if(apiResponse != null) {
+                // The server issued a fresh subscriber row with empty predefined
+                // fields. Wipe the local cache so identify(...) doesn't short-
+                // circuit against the previous subscriber's stale values.
+                prefs.clearSubscriberFields();
                 prefs.setHash(apiResponse.getData().getSubscriberHash());
             }
 
@@ -386,6 +431,10 @@ public class RestClient {
         @POST("goals")
         Call<NetworkResponse> sendGoal(@Body GoalRequest goalRequest, @Query("swv") String swv, @Query("bv") String bv);
 
+        @POST("events/track")
+        Call<NetworkResponse> trackEvent(@Body TrackEventRequest trackEventRequest, @Query("swv") String swv,
+                @Query("bv") String bv);
+
         @PUT(".")
         Call<TriggerCampaignResponse> sendTriggerEvent(@Body TriggerCampaignRequestModel triggerCampaignRequestModel);
 
@@ -423,6 +472,17 @@ public class RestClient {
         @PUT("subscriber/{id}/attributes")
         Call<NetworkResponse> addAttributes(@Path("id") String id, @Body JsonObject jsonObject);
 
+        // identify(...) — upsert the predefined subscriber fields. Distinct from
+        // updateSubscriberHash above (which targets the same path but carries a
+        // full subscriber-add body). Retrofit dispatches by method, not by path.
+        @PUT("subscriber/{id}")
+        Call<NetworkResponse> identifySubscriber(@Path("id") String id, @Body JsonObject fields);
+
+        // logout(...) — remove a subset of the predefined subscriber fields.
+        // DELETE with a body requires @HTTP(hasBody=true).
+        @HTTP(method = "DELETE", path = "subscriber/{id}/fields", hasBody = true)
+        Call<NetworkResponse> logoutSubscriberFields(@Path("id") String id, @Body List<String> fieldNames);
+
         @POST("subscriber/{id}/attributes")
         Call<NetworkResponse> setAttributes(@Path("id") String id, @Body JsonObject jsonObject);
 
@@ -437,9 +497,6 @@ public class RestClient {
 
         @POST("subscriber/dynamicSegments/add")
         Call<NetworkResponse> addDynamicSegments(@Body AddDynamicSegmentRequest addDynamicSegmentRequest);
-
-        @POST("subscriber/dynamicSegments/remove")
-        Call<NetworkResponse> removeDynamicSegments(@Body RemoveDynamicSegmentRequest removeDynamicSegmentRequest);
 
         @POST("subscriber/segments/segmentHashArray")
         Call<NetworkResponse> getSegmentHashArray(@Body SegmentHashArrayRequest segmentHashArrayRequest);

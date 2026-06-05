@@ -180,12 +180,16 @@ public class PEPermissionFragment extends Fragment {
     }
 
     /**
-     * Remove this fragment from the fragment manager
+     * Remove this fragment from the fragment manager.
+     * Uses commitAllowingStateLoss() (not commitNow) so this is safe to call
+     * synchronously from onCreate — which itself runs inside the add-fragment
+     * commitNow() transaction. Re-entering commitNow() would throw
+     * IllegalStateException("FragmentManager is already executing transactions").
      */
     private void removeSelf() {
         try {
             if (getFragmentManager() != null) {
-                getFragmentManager().beginTransaction().remove(this).commitNow();
+                getFragmentManager().beginTransaction().remove(this).commitAllowingStateLoss();
             }
         } catch (Exception e) {
             PELogger.error("Error removing permission fragment", e);

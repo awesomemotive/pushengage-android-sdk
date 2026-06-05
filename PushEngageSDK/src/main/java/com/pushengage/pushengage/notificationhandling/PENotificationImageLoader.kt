@@ -18,9 +18,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal interface PENotificationImageLoaderType {
     /**
@@ -85,27 +86,35 @@ internal class PENotificationImageLoader(private val context: Context) : PENotif
         }
     }
 
-    private suspend fun loadImageAsync(imageUrl: String): Bitmap? = suspendCoroutine { continuation ->
+    private suspend fun loadImageAsync(imageUrl: String): Bitmap? = suspendCancellableCoroutine { continuation ->
+        val didResume = AtomicBoolean(false)
+
+        fun resumeOnce(bitmap: Bitmap?) {
+            if (didResume.compareAndSet(false, true)) {
+                continuation.resume(bitmap)
+            }
+        }
+
         try {
             Glide.with(context)
                     .asBitmap()
                     .load(imageUrl)
                     .into(object : CustomTarget<Bitmap?>() {
                         override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap?>?) {
-                            continuation.resume(resource)
+                            resumeOnce(resource)
                         }
 
                         override fun onLoadCleared(placeholder: Drawable?) {
-                            continuation.resume(null)
+                            resumeOnce(null)
                         }
 
                         override fun onLoadFailed(errorDrawable: Drawable?) {
-                            continuation.resume(null)
+                            resumeOnce(null)
                         }
                     })
         } catch (e: Exception) {
             PELogger.error("PEImageLoader", e)
-            continuation.resume(null)
+            resumeOnce(null)
         }
     }
 

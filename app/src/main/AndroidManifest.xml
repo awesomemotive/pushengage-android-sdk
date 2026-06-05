@@ -12,17 +12,25 @@
         <activity
             android:name=".TriggerCampaign.AddAlertActivity"
             android:windowSoftInputMode="adjustNothing"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
         <activity
             android:name=".TriggerCampaign.TriggerEntryActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
         <activity
             android:name=".GoalActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
+        <activity
+            android:name=".TrackEventActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
         <activity
             android:name=".TriggerCampaign.TriggerCampaignActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.PushEngage.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -50,11 +58,16 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
         <activity
             android:name=".ComposeTestActivity"
             android:exported="false"
             android:theme="@style/Theme.PushEngage" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

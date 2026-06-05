@@ -27,6 +27,8 @@ PushEngage is a complete push notification platform that supports **both web and
 - **Rich Notifications** -- images, action buttons, custom sounds, and large icons
 - **Deep Linking** -- route users to specific activities or fragments
 - **Android 13+ Permission Handling** -- built-in runtime permission request with callbacks
+- **User Identification** -- tie subscribers to your own user IDs via `identify` / `logout`
+- **Custom Event Tracking** -- send custom in-app events to trigger or exit campaign workflows
 - **Audience Segmentation** -- static and dynamic segments based on user behavior
 - **Triggered Campaigns** -- send notifications based on in-app events
 - **Goal Tracking** -- measure conversion events tied to notifications
@@ -96,7 +98,7 @@ plugins {
 }
 
 dependencies {
-    implementation 'com.github.awesomemotive:pushengage-android-sdk:0.0.6'
+    implementation 'com.github.awesomemotive:pushengage-android-sdk:0.1.0'
     implementation platform('com.google.firebase:firebase-bom:26.1.1')
 }
 ```
@@ -212,16 +214,41 @@ String status = PushEngage.getNotificationPermissionStatus();
 
 | Category | Methods |
 |----------|---------|
-| **Setup** | `Builder.addContext().setAppId().build()`, `enableLogging`, `setSmallIconResource`, `getSdkVersion` |
+| **Setup** | `Builder.addContext().setAppId().build()`, `enableLogging`, `setSmallIconResource`, `setBadgeCount`, `setFcmConfigErrorListener`, `getSdkVersion` |
 | **Permissions** | `requestNotificationPermission`, `getNotificationPermissionStatus` |
 | **Subscription** | `subscribe`, `unsubscribe`, `getSubscriptionStatus`, `getSubscriptionNotificationStatus` |
-| **Subscriber Data** | `getSubscriberId`, `getSubscriberDetails`, `addProfileId`, `getDeviceTokenHash` |
+| **User Identity** | `identify`, `logout`, `addProfileId` |
+| **Subscriber Data** | `getSubscriberId`, `getSubscriberDetails`, `getDeviceTokenHash` |
 | **Attributes** | `addSubscriberAttributes`, `setSubscriberAttributes`, `getSubscriberAttributes`, `deleteSubscriberAttributes` |
 | **Segments** | `addSegment`, `removeSegment`, `addDynamicSegment` |
-| **Events** | `sendTriggerEvent`, `sendGoal`, `addAlert` |
+| **Events** | `sendTriggerEvent`, `sendGoal`, `trackEvent`, `addAlert` |
 | **Campaigns** | `automatedNotification` (enable/disable) |
 
 Full API reference: [Android SDK Documentation](https://www.pushengage.com/api/mobile-sdk/android-sdk)
+
+---
+
+## SDK Methods
+
+### Track Event
+
+Track a custom event for the current subscriber. Custom events are used to trigger or exit workflows based on subscriber activity in your app, such as adding items to a cart, completing a purchase, or any custom action you define.
+
+### Identify
+
+Associate the current subscriber with one or more user-identifying fields so campaigns and segments can be personalized using your own first-party data. Valid keys are restricted to a fixed set of subscriber fields — `first_name`, `last_name`, `email`, `phone`, `gender`, `dob`, `language`, `profile_id`, `country`, `city`, `state`, `zip` — with String, Number, or Boolean values.
+
+### Logout
+
+Clear identifying fields from the current subscriber while keeping the device subscribed for push. Call this when the user signs out of your app to detach their PII from the push subscription. Passing `null` or an empty list removes the default PII set (`first_name`, `last_name`, `email`, `phone`, `gender`, `dob`, `profile_id`); pass a list of field names to scope the removal.
+
+### Set Badge Count
+
+Control the numeric badge associated with notifications the SDK builds afterwards. Pass `0` to clear the badge; pass a positive integer to set it. The value is applied via `NotificationCompat.Builder.setNumber(count)` and surfaces in the system long-press menu — negative values are coerced to `0`.
+
+### Set FCM Config Error Listener
+
+Register a callback that fires when the SDK detects a mismatch between your app's local Firebase configuration and the configuration registered for your PushEngage site. Use this during integration to catch sender-ID or project-ID drift early — when a mismatch is detected at sync time, the SDK also skips the subscriber-add call so a permanently-undeliverable subscriber is not created on the server. Pass `null` to clear a previously-registered listener.
 
 ---
 

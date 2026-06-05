@@ -4,29 +4,30 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.pushengage.PushNotificationDemo.MainActivity
 import com.pushengage.PushNotificationDemo.R
-import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback
 import com.pushengage.pushengage.PushEngage
 import java.lang.reflect.Type
 
 
 class TriggerCampaignActivity : AppCompatActivity() {
-    private lateinit var sendTriggerEventButton: Button
-    private lateinit var addAlertButton: Button
-    private lateinit var enableAutomatedNotification: Button
-    private lateinit var disableAutomatedNotification: Button
+    private lateinit var sendTriggerEventButton: MaterialButton
+    private lateinit var addAlertButton: MaterialButton
+    private lateinit var enableAutomatedNotification: MaterialButton
+    private lateinit var disableAutomatedNotification: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trigger_campaign)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true);
-        title = "Trigger Campaigns"
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener { onBackPressed() }
         val intent = intent
         val data = intent.data
         if (data != null) {
@@ -60,29 +61,17 @@ class TriggerCampaignActivity : AppCompatActivity() {
         }
 
         enableAutomatedNotification.setOnClickListener {
-            PushEngage.automatedNotification(PushEngage.TriggerStatusType.enabled, object : PushEngageResponseCallback {
-                override fun onSuccess(responseObject: Any?) {
-                    Toast.makeText(this@TriggerCampaignActivity, "Trigger Enabled successfully", Toast.LENGTH_LONG).show()
-                }
-
-                override fun onFailure(errorCode: Int?, errorMessage: String?) {
-                    Toast.makeText(this@TriggerCampaignActivity, "Trigger Enabled failed", Toast.LENGTH_LONG).show()
-                }
-
-            })
+            PushEngage.automatedNotification(
+                PushEngage.TriggerStatusType.enabled,
+                com.pushengage.PushNotificationDemo.loggingCallback(this, "automatedNotification(enable)")
+            )
         }
 
         disableAutomatedNotification.setOnClickListener {
-            PushEngage.automatedNotification(PushEngage.TriggerStatusType.disabled, object : PushEngageResponseCallback {
-                override fun onSuccess(responseObject: Any?) {
-                    Toast.makeText(this@TriggerCampaignActivity, "Trigger Disabled successfully", Toast.LENGTH_LONG).show()
-                }
-
-                override fun onFailure(errorCode: Int?, errorMessage: String?) {
-                    Toast.makeText(this@TriggerCampaignActivity, "Trigger Disabled failed", Toast.LENGTH_LONG).show()
-                }
-
-            })
+            PushEngage.automatedNotification(
+                PushEngage.TriggerStatusType.disabled,
+                com.pushengage.PushNotificationDemo.loggingCallback(this, "automatedNotification(disable)")
+            )
         }
     }
 

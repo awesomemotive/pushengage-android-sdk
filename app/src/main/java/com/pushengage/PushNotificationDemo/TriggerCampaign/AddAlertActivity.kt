@@ -9,15 +9,15 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.pushengage.PushNotificationDemo.R
-import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback
 import com.pushengage.pushengage.PushEngage
 import com.pushengage.pushengage.PushEngage.TriggerAlertAvailabilityType
 import com.pushengage.pushengage.PushEngage.TriggerAlertType
@@ -34,7 +34,7 @@ class AddAlertActivity : AppCompatActivity() {
     private lateinit var price: TextInputEditText
     private lateinit var variantId: TextInputEditText
     private lateinit var alertPrice: TextInputEditText
-    private lateinit var addAlertButton: Button
+    private lateinit var addAlertButton: MaterialButton
     private lateinit var profileId: TextInputEditText
     private lateinit var alertPriceLayout: TextInputLayout
     private lateinit var alertMrp: TextInputEditText
@@ -44,7 +44,7 @@ class AddAlertActivity : AppCompatActivity() {
     private lateinit var adapter: CustomAdapter
     private var selectedType: TriggerAlertType = TriggerAlertType.priceDrop
     private var selectedAvailabilityType: TriggerAlertAvailabilityType? = null
-    private lateinit var selectDateTimeButton: Button
+    private lateinit var selectDateTimeButton: MaterialButton
     private var selectedDateTime: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,22 +97,16 @@ class AddAlertActivity : AppCompatActivity() {
                 if (alertMrp.text.toString().isEmpty()) null else alertMrp.text.toString().toDouble(),
                 if(dataMap.isEmpty()) null else dataMap)
 
-            PushEngage.addAlert(triggerAlert, object : PushEngageResponseCallback {
-                override fun onSuccess(responseObject: Any?) {
-                    Toast.makeText(this@AddAlertActivity, "Add Alert Successfully", Toast.LENGTH_LONG).show()
-                }
-
-                override fun onFailure(errorCode: Int?, errorMessage: String?) {
-                    Toast.makeText(this@AddAlertActivity, errorMessage, Toast.LENGTH_LONG).show()
-                }
-
-            })
+            PushEngage.addAlert(triggerAlert,
+                com.pushengage.PushNotificationDemo.loggingCallback(this, "addAlert"))
         }
         setupSpinners()
         setupList()
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = "Add Alert"
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        toolbar.setNavigationOnClickListener { finish() }
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
     }
 
     private fun showDateTimePicker() {

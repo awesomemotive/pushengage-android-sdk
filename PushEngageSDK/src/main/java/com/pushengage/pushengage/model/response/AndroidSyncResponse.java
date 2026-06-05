@@ -122,6 +122,9 @@ public class AndroidSyncResponse {
         @SerializedName("firebase_sender_id")
         @Expose
         private String firebaseSenderId;
+        @SerializedName("firebase_project_id")
+        @Expose
+        private String firebaseProjectId;
         @SerializedName("geo_fetch")
         @Expose
         private Boolean geoFetch;
@@ -217,6 +220,14 @@ public class AndroidSyncResponse {
 
         public void setFirebaseSenderId(String firebaseSenderId) {
             this.firebaseSenderId = firebaseSenderId;
+        }
+
+        public String getFirebaseProjectId() {
+            return firebaseProjectId;
+        }
+
+        public void setFirebaseProjectId(String firebaseProjectId) {
+            this.firebaseProjectId = firebaseProjectId;
         }
 
         public Boolean getGeoLocationEnabled() {

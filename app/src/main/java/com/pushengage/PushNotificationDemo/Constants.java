@@ -9,4 +9,7 @@ public class Constants {
     public static final String DELETE_SEGMENT = "DELETE_SEGMENT";
     public static final String ADD_DYNAMIC_SEGMENT = "ADD_DYNAMIC_SEGMENT";
     public static final String ADD_PROFILE_ID = "ADD_PROFILE_ID";
+    public static final String IDENTIFY = "IDENTIFY";
+    public static final String LOGOUT = "LOGOUT";
+    public static final String SET_BADGE_COUNT = "SET_BADGE_COUNT";
 }
