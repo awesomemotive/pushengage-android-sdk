@@ -224,7 +224,7 @@ String status = PushEngage.getNotificationPermissionStatus();
 | **Events** | `sendTriggerEvent`, `sendGoal`, `trackEvent`, `addAlert` |
 | **Campaigns** | `automatedNotification` (enable/disable) |
 
-Full API reference: [Android SDK Documentation](https://www.pushengage.com/api/mobile-sdk/android-sdk)
+Full API reference: [Android SDK Documentation](https://www.pushengage.com/api/mobile-sdk/android/quickstart)
 
 ---
 
@@ -261,7 +261,7 @@ Check out the complete example app in the **`app/`** directory, demonstrating no
 ## Documentation
 
 - [Installation & Setup Guide](https://www.pushengage.com/documentation/android-push-notification-sdk-setup/) -- step-by-step setup with Firebase
-- [Android SDK API Reference](https://www.pushengage.com/api/mobile-sdk/android-sdk) -- complete API docs
+- [Android SDK API Reference](https://www.pushengage.com/api/mobile-sdk/android/quickstart) -- complete API docs
 - [PushEngage Dashboard](https://app.pushengage.com) -- manage campaigns and analytics
 
 ---
