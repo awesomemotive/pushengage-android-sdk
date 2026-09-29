@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".InAppMessagingActivity">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/purple_500"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/white"
+        app:title="@string/in_app_messaging"
+        app:titleTextColor="@color/white" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="Trigger a campaign by its configured event name."
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/etEventName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:hint="Event name (e.g. app_open)"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1" />
+
+        <EditText
+            android:id="@+id/etEventParams"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:gravity="top"
+            android:hint="Parameters (optional JSON object, e.g. {&quot;type&quot;:&quot;permission&quot;})"
+            android:inputType="textMultiLine"
+            android:minLines="2" />
+
+        <Button
+            android:id="@+id/btnTriggerEvent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:padding="12dp"
+            android:text="Trigger Event" />
+
+        <Button
+            android:id="@+id/btnLogIamDatabase"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:backgroundTint="#4CAF50"
+            android:text="Log IAM Database State" />
+    </LinearLayout>
+    </ScrollView>
+</LinearLayout>

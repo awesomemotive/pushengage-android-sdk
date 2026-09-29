@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GoalActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_middle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+
+            <!-- Left column -->
+            <TextView
+                android:id="@+id/goalNameText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="10dp"
+                android:text="Enter Goal Name"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/guideline_middle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/goalNameInput"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="10dp"
+                android:ems="10"
+                android:hint="enter name"
+                android:inputType="text"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@id/guideline_middle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/goalNameText" />
+
+            <TextView
+                android:id="@+id/goalCountText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="10dp"
+                android:text="Enter Count"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/guideline_middle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/goalNameInput" />
+
+            <EditText
+                android:id="@+id/goalCountInput"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="10dp"
+                android:ems="10"
+                android:hint="enter count"
+                android:inputType="number"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@id/guideline_middle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/goalCountText" />
+
+            <!-- Right column -->
+            <TextView
+                android:id="@+id/goalValueText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="20dp"
+                android:text="Enter Value"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guideline_middle"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/goalValueInput"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="20dp"
+                android:ems="10"
+                android:hint="enter value"
+                android:inputType="numberDecimal"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guideline_middle"
+                app:layout_constraintTop_toBottomOf="@+id/goalValueText" />
+
+            <Button
+                android:id="@+id/sendGoalButton"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="20dp"
+                android:text="@string/send_goal"
+                app:backgroundTint="@color/blue"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/guideline_middle"
+                app:layout_constraintTop_toBottomOf="@+id/goalValueInput" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout> 
