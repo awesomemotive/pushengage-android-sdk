@@ -24,7 +24,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 34
         versionCode 7
-        versionName "0.1.0"
+        versionName "1.0.0"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -50,6 +50,12 @@ android {
             all {
                 // Required for inline mocking stability on newer JDKs (e.g. JDK 21 in Android Studio).
                 jvmArgs '-XX:+EnableDynamicAgentLoading', '-Dnet.bytebuddy.experimental=true'
+                // The suite pins five Robolectric SDK levels (23, 25, 28, 32, 33), and each
+                // one loads its own android-all jar into the single test worker. At the
+                // default worker heap the fifth load failed with OutOfMemoryError inside
+                // ApkAssets — surfacing as a random test "failure" in whichever class
+                // happened to be first to need that level.
+                maxHeapSize = '2g'
             }
         }
     }

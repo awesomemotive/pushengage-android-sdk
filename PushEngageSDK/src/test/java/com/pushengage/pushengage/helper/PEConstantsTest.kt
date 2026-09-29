@@ -38,6 +38,23 @@ class PEConstantsTest {
     }
 
     @Test
+    fun iamUrls_areValidHttpsAndServeTheVersionedApi() {
+        // IAM paths are relative ("iam/campaigns/metadata"), so the host must carry
+        // the /p/v1/ prefix itself: without it the request hits a route that does
+        // not exist and IAM never syncs.
+        for (url in listOf(PEConstants.PROD_IAM_URL, PEConstants.STG_IAM_URL)) {
+            assertTrue("URL should start with https://: $url", url.startsWith("https://"))
+            assertTrue("URL should end with /p/v1/: $url", url.endsWith("/p/v1/"))
+        }
+    }
+
+    @Test
+    fun productionIamUrl_isTheClientsApiHost_notTheNotificationCdn() {
+        assertEquals("https://clients-api.pushengage.com/p/v1/", PEConstants.PROD_IAM_URL)
+        assertNotEquals(PEConstants.PROD_BASE_CDN_URL, PEConstants.PROD_IAM_URL)
+    }
+
+    @Test
     fun defaultChannelId_matchesDefaultChannelName() {
         assertEquals("Default Channel", PEConstants.DEFAULT_CHANNEL_ID)
         assertEquals("Default Channel", PEConstants.DEFAULT_CHANNEL_NAME)

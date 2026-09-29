@@ -3,7 +3,6 @@ package com.pushengage.pushengage;
 import static kotlin.io.TextStreamsKt.readText;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +41,13 @@ import com.pushengage.pushengage.Callbacks.FcmConfigErrorListener;
 import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback;
 import com.pushengage.pushengage.Callbacks.PushEngagePermissionCallback;
 import com.pushengage.pushengage.internal.subscriber.PESubscriberFieldsHandler;
+import com.pushengage.pushengage.iam.action.IAMCustomActionHandler;
+import com.pushengage.pushengage.iam.controller.IAMController;
+import com.pushengage.pushengage.iam.controller.IAMControllerFactory;
+import com.pushengage.pushengage.iam.controller.IAMControllerImpl;
+import com.pushengage.pushengage.iam.display.IAMDisplayManager;
+import com.pushengage.pushengage.iam.display.IAMDisplayManagerImpl;
+import com.pushengage.pushengage.iam.util.IAMScalarString;
 import com.pushengage.pushengage.DataWorker.DailySyncDataWorker;
 import com.pushengage.pushengage.DataWorker.WeeklySyncDataWorker;
 import com.pushengage.pushengage.permissionhandling.PEPermissionFragment;
@@ -180,6 +186,10 @@ public class PushEngage {
         }
         registerNetworkReceiver();
         this.peManager = new PEManager(appCtx, this.prefs);
+
+        // Initialize the In-App Messaging controller during SDK startup.
+        IAMControllerFactory.getInstance().initialize(appCtx, this.prefs);
+        PELogger.debug("IAM Controller initialized during SDK startup");
     }
 
     /**
@@ -2581,6 +2591,112 @@ public class PushEngage {
         } else {
             if (callback != null)
                 callback.onFailure(400, validationResult);
+        }
+    }
+
+    /**
+     * Triggers an in-app message event with the specified name and parameters.
+     *
+     * This method allows you to trigger in-app messages that are configured to
+     * display when a specific event occurs. The event name and any additional
+     * parameters are used to determine which in-app messages should be displayed
+     * to the user.
+     *
+     * @param eventName  The name of the event to trigger.
+     * @param parameters Optional parameters to include with the event. These can
+     *                   be used for additional targeting of in-app messages. Can
+     *                   be null if no parameters are needed.
+     * @param callback   A callback to be invoked when the operation completes.
+     *                   Can be null.
+     */
+    public static void triggerIAMEvent(String eventName, Map<String, Object> parameters,
+            PushEngageResponseCallback callback) {
+        PushEngage inst = requireInstance(callback);
+        if (inst == null)
+            return;
+        // An empty event name can only be a caller bug: it matches no campaign, so
+        // without this the call reported success and the typo stayed silent. Same
+        // message and code as trackEvent's guard (PEManager.trackEvent); the iOS SDK
+        // reports the same message but has no numeric error code.
+        if (eventName == null || eventName.isEmpty()) {
+            if (callback != null)
+                callback.onFailure(400, "Event name is required");
+            return;
+        }
+        // NOTE: no apiPreValidate() here. That checks the notification site status
+        // (set only by the push subscribe flow), which would fail in-app triggers
+        // with "Site not active" on devices that never subscribed / granted
+        // notification permission. In-app messaging is its own channel: triggering
+        // works purely on locally-synced campaigns, and IAM's own active/inactive
+        // gating happens at sync time (inactive → campaigns are purged, so nothing
+        // is eligible to show anyway).
+        try {
+            // Conditions compare text, so a number's spelling decides whether it
+            // matches. IAMScalarString renders an integral value without a decimal
+            // point, so a React Native `120` — which reaches us as Double 120.0 —
+            // matches a condition authored as "120", exactly as it does on iOS. A
+            // plain toString() here spelled it "120.0" and it never matched.
+            Map<String, String> stringParams = IAMScalarString.stringifyValues(parameters);
+
+            // Use the IAM controller to process the trigger
+            IAMController iamController = IAMControllerFactory.getInstance();
+            iamController.processTrigger(eventName, stringParams);
+
+            if (callback != null) {
+                callback.onSuccess(null);
+            }
+        } catch (Exception e) {
+            PELogger.error("Error triggering in-app message: " + e.getMessage(), e);
+            if (callback != null) {
+                callback.onFailure(400, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Triggers an in-app message event with the specified name and parameters.
+     *
+     * @param eventName  The name of the event to trigger.
+     * @param parameters Optional parameters to include with the event. These can
+     *                   be used for additional targeting of in-app messages. Can
+     *                   be null if no parameters are needed.
+     */
+    public static void triggerIAMEvent(String eventName, Map<String, Object> parameters) {
+        triggerIAMEvent(eventName, parameters, null);
+    }
+
+    /**
+     * Triggers an in-app message event with the specified name.
+     *
+     * @param eventName The name of the event to trigger.
+     */
+    public static void triggerIAMEvent(String eventName) {
+        triggerIAMEvent(eventName, null, null);
+    }
+
+    /**
+     * Sets a custom action handler for in-app messages.
+     *
+     * This method allows you to handle custom actions defined in in-app messages.
+     * When a user interacts with a custom action in an in-app message, this
+     * handler will be called. Route on {@code parameters.get("action")} (the
+     * dashboard "Action name"); {@code actionId} is the button's internal key.
+     *
+     * @param handler The handler to receive custom actions. Pass null to remove
+     *                the current handler.
+     */
+    public static void setIAMCustomActionHandler(IAMCustomActionHandler handler) {
+        // Remember the handler even when the SDK is not initialized yet:
+        // wrappers (React Native, Flutter) and apps commonly register handlers
+        // before Builder.build() runs. It is applied when the display manager
+        // is created; dropping it silently left custom-action buttons dead.
+        IAMControllerImpl.setPendingCustomActionHandler(handler);
+        IAMController controller = IAMControllerFactory.getInstance();
+        if (controller instanceof IAMControllerImpl) {
+            IAMDisplayManager displayManager = ((IAMControllerImpl) controller).getDisplayManager();
+            if (displayManager instanceof IAMDisplayManagerImpl) {
+                ((IAMDisplayManagerImpl) displayManager).setCustomActionHandler(handler);
+            }
         }
     }
 

@@ -48,12 +48,24 @@ public class PEApplication extends Application {
         // Replace `appId` with your PushEngage site ID (e.g. a string
         // literal or BuildConfig.PUSHENGAGE_SITE_ID).
         // ===============================================================
+        // Enable verbose SDK logging BEFORE build() so init-time logs (including
+        // the IAM sync) are visible.
+        PushEngage.enableLogging(true);
+
         new PushEngage.Builder()
                 .addContext(getApplicationContext())
                 .setAppId(appId)
                 .build();
 
-        // Optional: enable verbose SDK logging in debug builds only.
-        PushEngage.enableLogging(true);
+        // Register the IAM custom-action listener app-wide: campaigns with
+        // `custom` buttons can display on ANY screen (e.g. app-open campaigns on
+        // MainActivity), so registering it only inside InAppMessagingActivity
+        // leaves taps unhandled everywhere else ("No custom action listener set").
+        PushEngage.setIAMCustomActionHandler((actionId, parameters) -> {
+            android.util.Log.d("PEApplication", "IAM custom action: " + actionId + " params: " + parameters);
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                    android.widget.Toast.makeText(getApplicationContext(),
+                            "Custom action: " + actionId, android.widget.Toast.LENGTH_LONG).show());
+        });
     }
 }

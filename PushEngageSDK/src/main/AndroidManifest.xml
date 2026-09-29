@@ -24,8 +24,13 @@
             android:excludeFromRecents="true"
             android:exported="false" />
 
-
-
+        <!-- Records the resumed activity from process start so IAM can find the
+             host activity when the SDK is initialized late (React Native /
+             Flutter). Merged into the host app automatically. -->
+        <provider
+            android:name=".iam.util.PEActivityTracker"
+            android:authorities="${applicationId}.pushengage-activitytracker"
+            android:exported="false" />
 
         <service
             android:name=".core.PEFirebaseMessagingService"

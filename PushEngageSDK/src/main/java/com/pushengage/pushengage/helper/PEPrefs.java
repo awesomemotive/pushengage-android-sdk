@@ -27,6 +27,13 @@ public class PEPrefs {
     private static final String KEY_TRIGGER_URL = "trigger";
     private static final String KEY_OPTIN_URL = "optin";
     private static final String KEY_LOGGER_URL = "log";
+    // In-App Messaging metadata — discovered version,
+    // status, per-host URLs, and the local fetch timestamp for the 1h cache.
+    private static final String KEY_IAM_VERSION = "iamVersion";
+    private static final String KEY_IAM_STATUS = "iamStatus";
+    private static final String KEY_IAM_BASE_URL = "iamBaseUrl";
+    private static final String KEY_IAM_ANALYTICS_URL = "iamAnalyticsUrl";
+    private static final String KEY_IAM_METADATA_FETCHED_AT = "iamMetadataFetchedAt";
     private static final String KEY_SITE_ID = "siteId";
     private static final String KEY_PROJECT_ID = "projectId";
     private static final String KEY_FIREBASE_PROJECT_ID = "firebaseProjectId";
@@ -114,6 +121,56 @@ public class PEPrefs {
 
     public void setAnalyticsUrl(String analyticsUrl) {
         mPrefsWrite.putString(KEY_ANALYTICS_URL, analyticsUrl);
+        mPrefsWrite.commit();
+    }
+
+    // --- In-App Messaging metadata accessors ---
+
+    public String getIamVersion() {
+        return mPrefsRead.getString(KEY_IAM_VERSION, "");
+    }
+
+    public void setIamVersion(String version) {
+        mPrefsWrite.putString(KEY_IAM_VERSION, version != null ? version : "");
+        mPrefsWrite.commit();
+    }
+
+    public String getIamStatus() {
+        return mPrefsRead.getString(KEY_IAM_STATUS, "");
+    }
+
+    public void setIamStatus(String status) {
+        mPrefsWrite.putString(KEY_IAM_STATUS, status != null ? status : "");
+        mPrefsWrite.commit();
+    }
+
+    // IAM base host (where the metadata document is fetched). Empty in
+    // production → the SDK uses the per-environment IAM constant. Campaigns and
+    // analytics hosts come from the metadata `api` block, not from here.
+    public String getIamBaseUrl() {
+        return mPrefsRead.getString(KEY_IAM_BASE_URL, "");
+    }
+
+    public void setIamBaseUrl(String url) {
+        mPrefsWrite.putString(KEY_IAM_BASE_URL, url != null ? url : "");
+        mPrefsWrite.commit();
+    }
+
+    public String getIamAnalyticsUrl() {
+        return mPrefsRead.getString(KEY_IAM_ANALYTICS_URL, "");
+    }
+
+    public void setIamAnalyticsUrl(String url) {
+        mPrefsWrite.putString(KEY_IAM_ANALYTICS_URL, url != null ? url : "");
+        mPrefsWrite.commit();
+    }
+
+    public long getIamMetadataFetchedAt() {
+        return mPrefsRead.getLong(KEY_IAM_METADATA_FETCHED_AT, 0L);
+    }
+
+    public void setIamMetadataFetchedAt(long timestampMillis) {
+        mPrefsWrite.putLong(KEY_IAM_METADATA_FETCHED_AT, timestampMillis);
         mPrefsWrite.commit();
     }
 

@@ -3,6 +3,8 @@ package com.pushengage.pushengage
 import android.content.Context
 import com.pushengage.pushengage.Callbacks.PushEngageResponseCallback
 import com.pushengage.pushengage.helper.PEPrefs
+import com.pushengage.pushengage.iam.controller.IAMControllerFactory
+import com.pushengage.pushengage.iam.controller.IAMControllerImpl
 import java.lang.reflect.Modifier
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -50,6 +52,17 @@ internal object PushEngageTestSupport {
     }
 
     fun resetSingleton() {
+        // Builder.build() also initialized the process-wide IAM controller and left it
+        // running. Its app-open sync goes to the real backend (these tests never point
+        // it at a mock), takes seconds, and its continuation calls back into the
+        // PushEngage statics — whichever test class has them installed by then. Stop
+        // it and drop the factory instance so the next test starts from nothing.
+        (IAMControllerFactory.getInstance() as? IAMControllerImpl)?.shutdown()
+        IAMControllerFactory::class.java.getDeclaredField("instance").apply {
+            isAccessible = true
+            set(null, null)
+        }
+
         val instField = PushEngage::class.java.getDeclaredField("instance")
         instField.isAccessible = true
         instField.set(null, null)

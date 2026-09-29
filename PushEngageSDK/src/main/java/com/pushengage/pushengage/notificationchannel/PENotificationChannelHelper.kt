@@ -162,8 +162,9 @@ internal class PENotificationChannelHelper(private val context: Context,
             channel = setChannelVibration(channel, channelEntity?.vibration, channelEntity?.vibrationPattern)
             channel = setChannelLedColor(channel, channelEntity?.ledColor, channelEntity?.ledColorCode)
             channel.lockscreenVisibility = visibility
-            if (channelEntity?.badges != null) {
-                channel.setShowBadge(channelEntity?.badges)
+            val badges = channelEntity?.badges
+            if (badges != null) {
+                channel.setShowBadge(badges)
             }
             if (!TextUtils.isEmpty(channelEntity?.groupId) && !TextUtils.isEmpty(channelEntity?.groupName)) {
                 notificationManager.createNotificationChannelGroup(NotificationChannelGroup(channelEntity?.groupId, channelEntity?.groupName))

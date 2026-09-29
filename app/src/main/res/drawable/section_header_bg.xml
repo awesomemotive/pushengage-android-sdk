@@ -2,18 +2,18 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#FFFFFF" />
+            <solid android:color="@color/surface_card" />
         </shape>
     </item>
     <item android:width="4dp" android:gravity="start">
         <shape android:shape="rectangle">
-            <solid android:color="@color/purple_500" />
+            <solid android:color="@color/section_header_accent" />
         </shape>
     </item>
     <item android:top="0dp" android:gravity="bottom">
         <shape android:shape="rectangle">
             <size android:height="1dp" />
-            <solid android:color="#EEEEEE" />
+            <solid android:color="@color/surface_divider" />
         </shape>
     </item>
 </layer-list>

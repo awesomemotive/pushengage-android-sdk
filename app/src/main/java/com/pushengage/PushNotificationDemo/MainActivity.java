@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             btnRemoveSegment, btnAddDynamicSegment, buttonSendGoal, btnTrackEvent, btnRequestNotificationPermission,
             btnComposeTest, btnGetNotificationPermissionStatus, btnGetSubscriptionStatus,
             btnGetSubscriptionNotificationStatus, btnSubscribe, btnUnsubscribe, btnGetSubscriberId,
-            btnSetBadgeCount, btnClearBadgeCount;
+            btnSetBadgeCount, btnClearBadgeCount, btnInAppMessaging;
     private TextView tvDeviceToken, tvDeviceHash, tvEnvChip, tvAppIdValue;
     private final Gson gson = new Gson();
     private final Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         btnUnsubscribe = findViewById(R.id.btn_unsubscribe);
         btnGetSubscriberId = findViewById(R.id.btn_get_subscriber_id);
         btnComposeTest = findViewById(R.id.btn_compose_test);
+        btnInAppMessaging = findViewById(R.id.btn_in_app_messaging);
         progressBar = findViewById(R.id.progress_bar);
         tvEnvChip = findViewById(R.id.tv_env_chip);
         tvAppIdValue = findViewById(R.id.tv_app_id_value);
@@ -272,6 +273,14 @@ public class MainActivity extends AppCompatActivity {
         btnGetSubscriberId.setOnClickListener(v -> {
             showProgressDialog();
             PushEngage.getSubscriberId(loggingCallback("getSubscriberId", null, null));
+        });
+
+        btnInAppMessaging.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, InAppMessagingActivity.class);
+                startActivity(intent);
+            }
         });
 
         btnComposeTest.setOnClickListener(new View.OnClickListener() {

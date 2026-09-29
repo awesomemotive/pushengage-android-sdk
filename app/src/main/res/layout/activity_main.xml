@@ -199,7 +199,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/device_hash"
-                    android:textColor="@color/black"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -447,6 +447,11 @@
                 android:id="@+id/body_other"
                 style="@style/SectionBody"
                 android:layout_marginBottom="32dp">
+
+                <Button
+                    android:id="@+id/btn_in_app_messaging"
+                    style="@style/DemoActionButton"
+                    android:text="@string/in_app_messaging" />
 
                 <Button
                     android:id="@+id/btn_compose_test"

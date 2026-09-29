@@ -9,4 +9,18 @@
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#3B43FF</color>
     <color name="green">#4CAF50</color>
+
+    <!-- Surfaces that used to be hardcoded #FFFFFF inside drawables. They need a
+         values-night counterpart: the text drawn on them resolves from the theme
+         (?android:attr/textColorPrimary), which turns white in dark mode, so a
+         fixed white background rendered the section headers white-on-white. -->
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_divider">#EEEEEE</color>
+    <!-- Filled buttons keep white labels in both modes. Left to the theme, the
+         label follows colorOnPrimary, which the night theme sets to black — dark
+         text on a mid-blue fill. -->
+    <color name="on_filled_button">#FFFFFF</color>
+    <!-- 4dp accent stripe on section headers. purple_500 is near-black, which
+         disappears against the dark surface, so night mode uses the brand blue. -->
+    <color name="section_header_accent">#191A35</color>
 </resources>

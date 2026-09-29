@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark-mode counterparts for the surfaces the drawables paint. Without
+         these the section-header rows and text fields stayed #FFFFFF while their
+         text resolved to white from the theme, making them unreadable. -->
+    <color name="surface_card">#1E1F2B</color>
+    <color name="surface_divider">#33FFFFFF</color>
+    <color name="on_filled_button">#FFFFFF</color>
+    <color name="section_header_accent">#3B43FF</color>
+</resources>

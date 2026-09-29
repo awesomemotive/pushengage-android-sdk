@@ -116,6 +116,7 @@
     <string name="section_triggers">Triggers</string>
     <string name="section_other">Other</string>
     <string name="compose_test">Compose Test</string>
+    <string name="in_app_messaging">In-App Messaging</string>
     <string name="waiting_for_token">Waiting for FCM token…</string>
 
 </resources>

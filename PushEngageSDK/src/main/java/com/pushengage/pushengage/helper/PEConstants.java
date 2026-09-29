@@ -1,7 +1,7 @@
 package com.pushengage.pushengage.helper;
 
 public class PEConstants {
-    public static final String SDK_VERSION = "0.1.0";
+    public static final String SDK_VERSION = "1.0.0";
 
     public static final String PROD = "PRODUCTION";
     public static final String STG = "STAGING";
@@ -42,18 +42,43 @@ public class PEConstants {
     public static final String STG_TRIGGER_URL = "https://x9dlvh1zcg.execute-api.us-east-1.amazonaws.com/beta/streams/staging-trigger/records/";
     public static final String STG_LOG_URL = "https://notify.pushengage.com/v1/";
 
+    // In-App Messaging base host (metadata + campaigns + analytics all live here).
+    // Distinct from the notification CDN above — IAM is served from its own host.
+    public static final String STG_IAM_URL = "https://staging-dexter2.pushengage.com/p/v1/";
+    // Production IAM is served by the clients API host, not the notification CDN.
+    public static final String PROD_IAM_URL = "https://clients-api.pushengage.com/p/v1/";
+
     public static final String PROD_BASE_CDN_URL = "https://dexter-cdn.pushengage.com/p/v1/";
     public static final String PROD_BASE_URL = "https://clients-api.pushengage.com/p/v1/";
     public static final String PROD_ANALYTICS_URL = "https://noti-analytics.pushengage.com/p/v1/";
     public static final String PROD_TRIGGER_URL = "https://m4xrk918t5.execute-api.us-east-1.amazonaws.com/beta/streams/production_triggers/records/";
     public static final String PROD_LOG_URL = "https://notify.pushengage.com/v1/";
 
-    //Intent extras
+    // Intent extras
     public static final String URL_EXTRA = "url";
     public static final String TAG_EXTRA = "tag";
     public static final String DATA_EXTRA = "data";
     public static final String ID_EXTRA = "id";
     public static final String ACTION_EXTRA = "action";
 
+    // In-App Messaging Constants
+    public static final String IAM_SYNC_WORK = "IAM_SYNC_WORK";
+    public static final String IAM_ANALYTICS_SYNC_WORK = "IAM_ANALYTICS_SYNC_WORK";
 
+    // Default In-App Messaging Trigger Events
+    public static final String IAM_TRIGGER_APP_OPEN = "app_open";
+    public static final String IAM_TRIGGER_APP_RESUME = "app_resume";
+    public static final String IAM_TRIGGER_SESSION_START = "session_start";
+
+    // In-App Messaging Action Parameters
+    public static final String IAM_PARAM_URL = "url";
+    public static final String IAM_PARAM_ACTION_ID = "id";
+    public static final String IAM_PARAM_ACTION = "action";
+
+    // IAM API relative paths (appended to the discovered/base host, which already
+    // ends in /p/v1/). The metadata endpoint is fetched from the BASE_CDN host;
+    // campaigns/analytics use the hosts the metadata response advertises.
+    public static final String IAM_PATH_METADATA = "iam/campaigns/metadata";
+    public static final String IAM_PATH_CAMPAIGNS = "iam/campaigns";
+    public static final String IAM_PATH_ANALYTICS = "iam/campaigns/analytics";
 }

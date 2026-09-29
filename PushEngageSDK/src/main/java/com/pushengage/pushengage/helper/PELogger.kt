@@ -5,6 +5,7 @@ import android.util.Log
 internal object PELogger {
     private const val TAG = "PushEngage"
     private var isLoggingEnabled: Boolean = false
+    private const val PREFIX = "PushEngage: "
 
     @JvmStatic
     fun isLoggingEnabled(): Boolean {
@@ -19,14 +20,21 @@ internal object PELogger {
     @JvmStatic
     fun debug(message: String) {
         if(isLoggingEnabled) {
-            Log.d(TAG, message)
+            Log.d(TAG, PREFIX + message)
         }
     }
 
     @JvmStatic
-    fun error(message: String, throwable: Throwable?=null) {
+    fun error(message: String) {
         if(isLoggingEnabled) {
-            Log.e(TAG, message, throwable)
+            Log.e(TAG, PREFIX + message)
+        }
+    }
+
+    @JvmStatic
+    fun error(message: String, throwable: Throwable?) {
+        if(isLoggingEnabled) {
+            Log.e(TAG, PREFIX + message, throwable)
         }
     }
 }

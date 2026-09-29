@@ -56,9 +56,13 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".InAppMessagingActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="false"
+            android:theme="@style/Theme.PushEngage.NoActionBar" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.PushEngage.NoActionBar" />
         <activity
             android:name=".ComposeTestActivity"

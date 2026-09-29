@@ -21,7 +21,14 @@ public class PEPermissionHelperActivity extends ComponentActivity {
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static PushEngagePermissionCallback pendingCallback;
 
-    public static void requestPermission(ComponentActivity originalActivity, PushEngagePermissionCallback callback) {
+    /**
+     * {@code originalActivity} is only used as the launch context, so any
+     * Activity works — this is the self-contained path for hosts that are not
+     * ComponentActivity/FragmentActivity (e.g. a plain Activity hosting an
+     * in-app message).
+     */
+    public static void requestPermission(android.app.Activity originalActivity,
+            PushEngagePermissionCallback callback) {
         PELogger.debug("Launching invisible permission helper");
         pendingCallback = callback;
 

@@ -66,6 +66,9 @@
         <item name="android:layout_marginVertical">4dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="backgroundTint">@color/blue</item>
+        <!-- Pinned, not inherited: the label would otherwise follow
+             colorOnPrimary, which the night theme sets to black. -->
+        <item name="android:textColor">@color/on_filled_button</item>
     </style>
 
     <style name="DemoActionButton.Accent">
