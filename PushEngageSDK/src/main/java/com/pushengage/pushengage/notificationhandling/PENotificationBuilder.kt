@@ -167,6 +167,11 @@ internal class PENotificationBuilder(private val context: Context,
                                    index: Int,
                                    additionalData: HashMap<String, String>?) : Intent {
         val actionButtonIntent = Intent(context, PENotificationHandlerActivity::class.java)
+        // Android matches PendingIntents on request code and intent action/data, not extras. The
+        // button request codes are shared (1200 + index), so a per-notification action keeps each
+        // notification's buttons separate; otherwise FLAG_UPDATE_CURRENT lets the newest
+        // notification overwrite the tag, URL and id of every older one still in the shade.
+        actionButtonIntent.action = "${context.packageName}.pushengage.ACTION_BUTTON.${payload.notificationId}.$index"
         if(!actionButton.url.isNullOrEmpty()) {
             actionButtonIntent.putExtra(PEConstants.URL_EXTRA, actionButton.url)
         } else if(!payload.commonUrl.isNullOrEmpty()) {

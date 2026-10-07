@@ -5,6 +5,37 @@ All notable changes to the PushEngage Android SDK are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-10-07
+
+### Fixed
+- **Offline notification tap crash.** Tapping the body of a notification while the device
+  was offline crashed the SDK's background `:RegisterReceiverService` process with
+  `SQLiteConstraintException: NOT NULL constraint failed: ClickRequest.action`, and that click
+  was never reported. Body taps are now queued and reported with an empty action, the service
+  stays alive until the queued click is written, and a click that cannot be tracked (no
+  notification tag, or the queue write fails) is reported to the SDK's error log instead of
+  crashing.
+- **Click replay could crash the app at launch.** Re-sending clicks queued while offline ran on
+  an unguarded background thread in the app's main process, on every connectivity change
+  including the one delivered at SDK initialization. A database failure there is now reported
+  to the SDK's error log instead of crashing the app.
+- **In-app messages on devices without a working WebView.** Devices whose WebView provider is
+  missing, disabled or mid-update threw while creating the message view and crashed the app.
+  The message is now skipped and the queue moves on.
+- **Offline clicks were counted twice.** A click queued while offline was re-sent once per
+  connectivity broadcast and once per app process, so the dashboard showed two clicks for one
+  tap. Replay now runs only in the app's main process, one pass at a time, sends each queued
+  click once and deletes exactly that row when the server accepts it.
+- **Action buttons acted on the wrong notification.** With two or more notifications with
+  action buttons in the notification shade, tapping a button on an older one opened the newest
+  notification's button URL, credited the click to the newest notification and dismissed it
+  instead. Each notification's buttons now keep their own URL, tag and notification id.
+
+### Security
+- `NotificationService` is no longer exported. It is only ever started from inside the app,
+  and the exported declaration let any installed app dismiss the host app's notifications and
+  forge click analytics for its subscriber.
+
 ## [1.0.0] - 2026-09-29
 
 ### Added

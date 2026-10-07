@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -471,5 +472,57 @@ class PENotificationBuilderTest {
         val notification = builder.createNotificationBuilder(payload, null).build()
 
         assertEquals(0, notification.number)
+    }
+
+    // --- click intents: which action value each tap target carries ---
+    // The analytics API counts "action1"/"action2" as button clicks and anything else as a
+    // body click, so the position-to-action mapping is load-bearing for click analytics.
+
+    @Test
+    fun clickIntents_bodyCarriesNoAction_buttonsCarryAction1AndAction2InOrder() {
+        val payload = FCMPayloadModel(
+            title = "Title", body = "Body", notificationId = 77,
+            actionButtons = """[{"l":"Button One","u":"https://example.com/one"},{"l":"Button Two","u":"https://example.com/two"}]"""
+        )
+
+        val notification = builder.createNotificationBuilder(payload, null).build()
+
+        val bodyIntent = shadowOf(notification.contentIntent).savedIntent
+        assertNull("body tap must not carry an action", bodyIntent.getStringExtra(PEConstants.ACTION_EXTRA))
+        assertEquals(2, notification.actions.size)
+        assertEquals("Button One", notification.actions[0].title)
+        assertEquals("action1", shadowOf(notification.actions[0].actionIntent).savedIntent.getStringExtra(PEConstants.ACTION_EXTRA))
+        assertEquals("https://example.com/one", shadowOf(notification.actions[0].actionIntent).savedIntent.getStringExtra(PEConstants.URL_EXTRA))
+        assertEquals("Button Two", notification.actions[1].title)
+        assertEquals("action2", shadowOf(notification.actions[1].actionIntent).savedIntent.getStringExtra(PEConstants.ACTION_EXTRA))
+        assertEquals("https://example.com/two", shadowOf(notification.actions[1].actionIntent).savedIntent.getStringExtra(PEConstants.URL_EXTRA))
+    }
+
+    /**
+     * Every notification's buttons used the same PendingIntents (request code 1200 + i with
+     * FLAG_UPDATE_CURRENT), so each new notification overwrote the buttons of the ones still in the
+     * shade: a button tap on an older notification reported the newest one's tag, opened its URL
+     * and cancelled its id.
+     */
+    @Test
+    fun actionButtons_ofAnOlderNotification_keepTheirOwnTagUrlAndIdAfterANewerOneIsBuilt() {
+        val buttons = { n: String -> """[{"l":"$n One","u":"https://example.com/$n/one"},{"l":"$n Two","u":"https://example.com/$n/two"}]""" }
+        val older = builder.createNotificationBuilder(
+            FCMPayloadModel(title = "Older", body = "Body", tag = "tag-older", notificationId = 101, actionButtons = buttons("older")), null
+        ).build()
+        val newer = builder.createNotificationBuilder(
+            FCMPayloadModel(title = "Newer", body = "Body", tag = "tag-newer", notificationId = 102, actionButtons = buttons("newer")), null
+        ).build()
+
+        for (i in 0..1) {
+            assertNotEquals("button ${i + 1} of both notifications must not share one PendingIntent",
+                older.actions[i].actionIntent, newer.actions[i].actionIntent)
+            val olderIntent = shadowOf(older.actions[i].actionIntent).savedIntent
+            assertEquals("tag-older", olderIntent.getStringExtra(PEConstants.TAG_EXTRA))
+            assertEquals(101, olderIntent.getIntExtra(PEConstants.ID_EXTRA, -1))
+            assertEquals("action${i + 1}", olderIntent.getStringExtra(PEConstants.ACTION_EXTRA))
+            assertEquals("https://example.com/older/${if (i == 0) "one" else "two"}", olderIntent.getStringExtra(PEConstants.URL_EXTRA))
+        }
+        assertEquals("tag-newer", shadowOf(newer.actions[0].actionIntent).savedIntent.getStringExtra(PEConstants.TAG_EXTRA))
     }
 }

@@ -21,6 +21,9 @@ public interface DaoInterface {
     @Query("DELETE FROM ClickRequest WHERE deviceHash = :deviceHash AND tag = :tag")
     void deleteClick(String deviceHash, String tag);
 
+    @Query("DELETE FROM ClickRequest WHERE id = :id")
+    void deleteClickById(long id);
+
     @Query("SELECT * FROM Channel WHERE channel_id = :channelId")
     ChannelEntity getChannel(String channelId);
 

@@ -3,6 +3,7 @@ package com.pushengage.pushengage.Database
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.pushengage.pushengage.helper.PEConstants
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -180,4 +181,21 @@ class DaoInterfaceTest {
         true,
         "public"
     )
+
+    // ---- ClickRequest replay bookkeeping ----
+
+    @Test
+    fun deleteClickById_removesOnlyThatRow_evenWhenAnotherRowSharesTheTag() {
+        dao.insertClickRequest(ClickRequestEntity("hash", "tag_1", "", PEConstants.ANDROID, PEConstants.MOBILE, "1.0.1", "UTC"))
+        dao.insertClickRequest(ClickRequestEntity("hash", "tag_1", "action1", PEConstants.ANDROID, PEConstants.MOBILE, "1.0.1", "UTC"))
+        val rows = dao.getAllClick()
+        assertEquals(2, rows.size)
+        val bodyTap = rows.first { it.action == "" }
+
+        dao.deleteClickById(bodyTap.id)
+
+        val remaining = dao.getAllClick()
+        assertEquals(1, remaining.size)
+        assertEquals("action1", remaining[0].action)
+    }
 }

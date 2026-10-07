@@ -42,7 +42,7 @@
         <service
             android:name=".Service.NotificationService"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:process=":RegisterReceiverService" />
 
     </application>

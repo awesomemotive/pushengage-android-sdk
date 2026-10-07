@@ -376,7 +376,15 @@ public class IAMDisplayManagerImpl implements IAMDisplayManager {
 
         if (webViewContainer == null) {
             PELogger.debug("displayMessageInternal: Creating new WebView container");
-            webViewContainer = new IAMWebViewContainer(activity);
+            try {
+                webViewContainer = new IAMWebViewContainer(activity);
+            } catch (Exception | LinkageError e) {
+                // Devices whose WebView provider is missing, disabled or mid-update throw
+                // from the WebView constructor. Skip the message rather than crash the host;
+                // returning false lets the queue mark it complete and move on.
+                PELogger.error("displayMessageInternal: WebView unavailable, skipping message " + message.id, e);
+                return false;
+            }
         }
 
         // (Re)wire the listeners on EVERY display pass, not only on container
