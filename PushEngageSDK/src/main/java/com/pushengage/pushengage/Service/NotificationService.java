@@ -18,6 +18,7 @@ import com.pushengage.pushengage.Database.PERoomDatabase;
 import com.pushengage.pushengage.PushEngage;
 import com.pushengage.pushengage.RestClient.RestClient;
 import com.pushengage.pushengage.helper.PEConstants;
+import com.pushengage.pushengage.helper.PELogger;
 import com.pushengage.pushengage.helper.PEPrefs;
 import com.pushengage.pushengage.helper.PEUtilities;
 import com.pushengage.pushengage.model.request.ErrorLogRequest;
@@ -84,6 +85,20 @@ public class NotificationService extends Service {
         if (prefs == null && context != null) {
             prefs = new PEPrefs(context);
         }
+        // A click cannot be attributed without its notification tag and the analytics API
+        // rejects the request, so there is nothing useful to send or queue. Report it through
+        // the SDK's error log so dropped clicks stay measurable (PELogger is off by default).
+        if (tag == null || tag.isEmpty()) {
+            PELogger.debug("Notification click not tracked: missing tag");
+            reportClickTrackingFailure(context, "", "missing tag");
+            stopSelf();
+            return;
+        }
+        // Body taps carry no action; only action buttons set one. Track them as "" so the
+        // value satisfies the NOT NULL ClickRequest.action column when queued offline. The
+        // analytics API counts an empty action as a plain click, same as an absent one.
+        final String safeAction = action == null ? "" : action;
+        final String safeDeviceHash = deviceHash == null ? "" : deviceHash;
         if (PEUtilities.checkNetworkConnection(context)) {
             Map<String, String> headerMap = new HashMap<>();
             headerMap.put("referer", "https://pushengage.com/service-worker.js");
@@ -95,7 +110,7 @@ public class NotificationService extends Service {
                 device = PEConstants.MOBILE;
             }
 
-            Call<NetworkResponse> notificationClickResponseCall = RestClient.getAnalyticsClient(context, headerMap).notificationClick(deviceHash, tag, action, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
+            Call<NetworkResponse> notificationClickResponseCall = RestClient.getAnalyticsClient(context, headerMap).notificationClick(safeDeviceHash, tag, safeAction, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
             notificationClickResponseCall.enqueue(new Callback<NetworkResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<NetworkResponse> call, @NonNull Response<NetworkResponse> response) {
@@ -107,7 +122,7 @@ public class NotificationService extends Service {
                             new Timer().schedule(new TimerTask() {
                                 @Override
                                 public void run() {
-                                    notificationCLick(context, deviceHash, action, tag, true);
+                                    notificationCLick(context, safeDeviceHash, safeAction, tag, true);
                                 }
                             }, PEConstants.RETRY_DELAY);
 
@@ -130,7 +145,7 @@ public class NotificationService extends Service {
                         new Timer().schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                notificationCLick(context, deviceHash, action, tag, true);
+                                notificationCLick(context, safeDeviceHash, safeAction, tag, true);
                             }
                         }, PEConstants.RETRY_DELAY);
 
@@ -155,15 +170,42 @@ public class NotificationService extends Service {
             } else {
                 device = PEConstants.MOBILE;
             }
-            ClickRequestEntity clickRequestEntity = new ClickRequestEntity(deviceHash, tag, action, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
+            ClickRequestEntity clickRequestEntity = new ClickRequestEntity(safeDeviceHash, tag, safeAction, PEConstants.ANDROID, device, PushEngage.getSdkVersion(), PEUtilities.getTimeZone());
             Runnable runnable = new Runnable() {
                 public void run() {
-                    daoInterface.insertClickRequest(clickRequestEntity);
+                    try {
+                        daoInterface.insertClickRequest(clickRequestEntity);
+                    } catch (Exception e) {
+                        // Click analytics must never take the host app's process down.
+                        PELogger.error("Queue notification click", e);
+                        reportClickTrackingFailure(context, tag, "queue failed: " + e.getMessage());
+                    } finally {
+                        // Stop only once the row is written. This service is the sole component
+                        // in its process, so stopping earlier leaves an empty process that can be
+                        // reclaimed mid-write, losing the click.
+                        stopSelf();
+                    }
                 }
             };
             Thread thread = new Thread(runnable);
             thread.start();
-            stopSelf();
+        }
+    }
+
+    /**
+     * Sends a click-tracking failure to the SDK's error log. Best effort: when the device is
+     * offline the request simply fails quietly, like the other error logs in this service.
+     */
+    private void reportClickTrackingFailure(Context context, String tag, String reason) {
+        try {
+            ErrorLogRequest errorLogRequest = new ErrorLogRequest();
+            ErrorLogRequest.Data data = errorLogRequest.new Data(tag, getPrefsHashSafe(), PEConstants.MOBILE, PEUtilities.getTimeZone(), reason);
+            errorLogRequest.setApp(PEConstants.ANDROID_SDK);
+            errorLogRequest.setName(PEConstants.CLICK_COUNT_TRACKING_FAILED);
+            errorLogRequest.setData(data);
+            PEUtilities.addLogs(context, TAG, errorLogRequest);
+        } catch (Exception e) {
+            PELogger.error("Report click tracking failure", e);
         }
     }
 

@@ -1,6 +1,9 @@
 package com.pushengage.pushengage.iam.display
 
 import android.app.Activity
+import android.util.AndroidRuntimeException
+import android.view.ViewGroup
+import android.webkit.WebView
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.pushengage.pushengage.Database.PERoomDatabase
@@ -16,6 +19,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -54,6 +58,27 @@ class IAMDisplayManagerImplTest {
         id, IAMPosition.CENTER, "<html><body>hi</body></html>", displayDurationSeconds,
         true, "{}", null, null, 1, null, null, "{\"type\":\"auto\"}"
     )
+
+    // ------------------------------------------------ missing WebView provider
+
+    @Test
+    fun `a device without a usable WebView provider skips the message instead of crashing`() {
+        // Devices with the WebView package missing, disabled or mid-update throw from the
+        // WebView constructor. The host app must not crash; the message is simply skipped.
+        Mockito.mockConstruction(WebView::class.java) { _, _ ->
+            throw AndroidRuntimeException(
+                "android.webkit.WebViewFactory\$MissingWebViewPackageException: Failed to load WebView provider: No WebView installed"
+            )
+        }.use {
+            val displayed = displayManager.displayMessage(message("msg-no-webview", 0), activity)
+            shadowOf(Looper.getMainLooper()).idle()
+
+            assertFalse("a message cannot be displayed without a WebView", displayed)
+            assertNull("nothing may be marked as displaying", displayManager.displayingMessageId)
+            val content = activity.findViewById<ViewGroup>(android.R.id.content)
+            assertEquals("nothing may be attached to the view tree", 0, content.childCount)
+        }
+    }
 
     // ------------------------------------------------ dead-activity protection
 

@@ -242,4 +242,35 @@ class RestClientUrlTest {
             server.shutdown()
         }
     }
+
+    // --- Wire encoding the click-tracking fix relies on ---
+
+    /**
+     * NotificationService tracks a body tap with action "" (only action buttons carry one).
+     * Pins that Retrofit sends an empty value as `action=` while a null omits the parameter,
+     * which the analytics API treats identically.
+     */
+    @Test
+    fun notificationClick_emptyActionIsSentAsEmptyParam_nullActionIsOmitted() {
+        val server = MockWebServer()
+        server.start()
+        try {
+            prefs.environment = PEConstants.PROD
+            prefs.analyticsUrl = server.url("/").toString()
+            prefs.siteKey = "site_key"
+            server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+            server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+            val client = RestClient.getAnalyticsClient(context, emptyMap())
+
+            client.notificationClick("hash", "tag", "", PEConstants.ANDROID, PEConstants.MOBILE, "1.0.0", "UTC").execute()
+            val withEmptyAction = server.takeRequest(2, TimeUnit.SECONDS)!!.requestUrl!!
+            assertEquals("", withEmptyAction.queryParameter("action"))
+
+            client.notificationClick("hash", "tag", null, PEConstants.ANDROID, PEConstants.MOBILE, "1.0.0", "UTC").execute()
+            val withNullAction = server.takeRequest(2, TimeUnit.SECONDS)!!.requestUrl!!
+            assertNull(withNullAction.queryParameter("action"))
+        } finally {
+            server.shutdown()
+        }
+    }
 }

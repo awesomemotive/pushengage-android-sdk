@@ -115,7 +115,7 @@ public class ClickRequestEntity {
         this.timezone = timezone;
     }
 
-    public ClickRequestEntity(String deviceHash, String tag, String action, String deviceType, String device, String swv, String timezone) {
+    public ClickRequestEntity(@NonNull String deviceHash, @NonNull String tag, @NonNull String action, @NonNull String deviceType, @NonNull String device, @NonNull String swv, @NonNull String timezone) {
         this.deviceHash = deviceHash;
         this.tag = tag;
         this.action = action;
